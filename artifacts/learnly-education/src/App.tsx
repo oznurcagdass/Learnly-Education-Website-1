@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   ArrowDownRight,
   ArrowRight,
@@ -12,6 +13,15 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import {
+  getListLearningContentQueryKey,
+  getListNotificationsQueryKey,
+  useCreateLearningContent,
+  useListLearningContent,
+  useListNotifications,
+  useMarkNotificationRead,
+} from '@workspace/api-client-react';
+import type { LearningContentInputContentType } from '@workspace/api-client-react';
 
 type Language = 'tr' | 'en';
 type AudienceKey = 'parents' | 'students' | 'teachers' | 'examPrep' | 'adultLearners';
@@ -48,6 +58,7 @@ const translations = {
       resources: 'Matematik kaynakları',
       story: 'Hikâyemiz',
       faq: 'Sorular',
+      workspace: 'Çalışma alanı',
       signIn: 'Giriş yap',
       request: 'Matematik eğitmeni bul',
       language: 'Dil seçimi',
@@ -248,6 +259,64 @@ const translations = {
       signIn: 'Aile hesapları çok yakında burada.',
       requestSent: 'Eğitmen talebiniz yola çıktı.',
     },
+    workspace: {
+      kicker: 'Ortak öğrenme alanı',
+      title: 'Dersin ötesinde, birlikte ilerleyin.',
+      intro: 'Öğretmenlerin paylaştığı içerikleri keşfedin, öğrenciler için sıradaki adımı görün ve veliler olarak önemli duyuruları kaçırmayın.',
+      tabLabel: 'Çalışma alanı rolleri',
+      roles: {
+        teacher: 'Öğretmen paneli',
+        student: 'Öğrenci paneli',
+        parent: 'Veli paneli',
+      },
+      teacher: {
+        label: 'Yeni içerik yayınla',
+        title: 'Başlık',
+        titlePlaceholder: 'Örneğin: Kesirleri görselleştirme',
+        description: 'Açıklama',
+        descriptionPlaceholder: 'İçeriğin ne öğrettiğini ve nasıl kullanılacağını kısaca anlatın.',
+        type: 'İçerik türü',
+        level: 'Seviye',
+        levelPlaceholder: 'Örneğin: 6–8. sınıf',
+        author: 'Yayınlayan',
+        authorPlaceholder: 'Adınız',
+        publish: 'İçeriği yayınla',
+        publishing: 'Yayınlanıyor…',
+        success: 'İçerik yayınlandı. Öğrenciler ve veliler kısa süre içinde görebilir.',
+        types: {
+          lesson: 'Ders',
+          practice: 'Pratik',
+          resource: 'Kaynak',
+          announcement: 'Duyuru',
+        },
+      },
+      student: {
+        label: 'Yeni yayınlar',
+        refresh: 'Otomatik yenilenir',
+        refreshDetail: 'Yeni içerikler yaklaşık 15 saniyede görünür.',
+        empty: 'Henüz yayınlanmış içerik yok.',
+        emptyDetail: 'Bir öğretmen içerik yayınladığında burada görünecek.',
+        by: 'Yayınlayan',
+      },
+      parent: {
+        label: 'Bildirimler',
+        unread: 'okunmamış',
+        empty: 'Yeni bildiriminiz yok.',
+        emptyDetail: 'Yeni bir içerik yayınlandığında burada bilgi göreceksiniz.',
+        markRead: 'Okundu olarak işaretle',
+        markedRead: 'Okundu',
+      },
+      loading: 'Yükleniyor',
+      error: 'İçerik yüklenemedi.',
+      retry: 'Tekrar dene',
+      contentTypes: {
+        lesson: 'Ders',
+        practice: 'Pratik',
+        resource: 'Kaynak',
+        announcement: 'Duyuru',
+      },
+      published: 'Yayınlandı',
+    },
   },
   en: {
     nav: {
@@ -255,6 +324,7 @@ const translations = {
       resources: 'Math resources',
       story: 'Our story',
       faq: 'Questions',
+      workspace: 'Learning workspace',
       signIn: 'Sign in',
       request: 'Find a math tutor',
       language: 'Language selection',
@@ -439,6 +509,64 @@ const translations = {
     toasts: {
       signIn: 'Family accounts are coming soon.',
       requestSent: 'Your tutoring request is on its way.',
+    },
+    workspace: {
+      kicker: 'Shared learning space',
+      title: 'Keep learning together, beyond the lesson.',
+      intro: 'Explore teacher-published content, give students a clear next step, and help families stay close to important updates.',
+      tabLabel: 'Learning workspace roles',
+      roles: {
+        teacher: 'Teacher panel',
+        student: 'Student panel',
+        parent: 'Parent panel',
+      },
+      teacher: {
+        label: 'Publish new content',
+        title: 'Title',
+        titlePlaceholder: 'For example: Visualising fractions',
+        description: 'Description',
+        descriptionPlaceholder: 'Briefly explain what this content teaches and how to use it.',
+        type: 'Content type',
+        level: 'Level',
+        levelPlaceholder: 'For example: Grades 6–8',
+        author: 'Published by',
+        authorPlaceholder: 'Your name',
+        publish: 'Publish content',
+        publishing: 'Publishing…',
+        success: 'Content published. Students and parents will see it shortly.',
+        types: {
+          lesson: 'Lesson',
+          practice: 'Practice',
+          resource: 'Resource',
+          announcement: 'Announcement',
+        },
+      },
+      student: {
+        label: 'New publications',
+        refresh: 'Refreshes automatically',
+        refreshDetail: 'New content appears approximately every 15 seconds.',
+        empty: 'No published content yet.',
+        emptyDetail: 'A teacher post will appear here when it is published.',
+        by: 'Published by',
+      },
+      parent: {
+        label: 'Notifications',
+        unread: 'unread',
+        empty: 'You have no new notifications.',
+        emptyDetail: 'You will see an update here when new content is published.',
+        markRead: 'Mark as read',
+        markedRead: 'Read',
+      },
+      loading: 'Loading',
+      error: 'Could not load content.',
+      retry: 'Try again',
+      contentTypes: {
+        lesson: 'Lesson',
+        practice: 'Practice',
+        resource: 'Resource',
+        announcement: 'Announcement',
+      },
+      published: 'Published',
     },
   },
 } as const;
