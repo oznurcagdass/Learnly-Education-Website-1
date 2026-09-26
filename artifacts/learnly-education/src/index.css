@@ -59,6 +59,9 @@
 .nav-links { display: flex; gap: 29px; align-items: center; margin-left: auto; }
 .nav-link { color: var(--ink-soft); font-size: .86rem; text-decoration: none; background: transparent; border: 0; cursor: pointer; padding: 0; transition: color .2s ease; }.nav-link:hover { color: var(--indigo); }
 .nav-actions { display: flex; align-items: center; gap: 18px; }.nav-login { color: var(--ink); text-decoration: none; font-size: .86rem; background: transparent; border: 0; cursor: pointer; }
+.language-switch { display: inline-flex; align-items: center; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.18); }
+.language-switch button { border: 0; background: transparent; color: var(--ink-soft); border-radius: 999px; cursor: pointer; padding: 4px 7px; font-family: var(--app-font-mono); font-size: .59rem; letter-spacing: .06em; line-height: 1; transition: color .2s ease, background .2s ease; }
+.language-switch button:hover, .language-switch button.active { color: var(--paper); background: var(--indigo); }
 .button { border: 0; cursor: pointer; font: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 9px; text-decoration: none; transition: transform .2s ease, background .2s ease, color .2s ease, box-shadow .2s ease; }.button:active { transform: translateY(1px) scale(.99); }
 .button-primary { color: var(--paper); background: var(--indigo); padding: 13px 18px; border-radius: 7px; font-size: .82rem; font-weight: 700; box-shadow: 3px 3px 0 var(--indigo-deep); }.button-primary:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0 var(--indigo-deep); background: #3b4380; }
 .button-ghost { color: var(--ink); padding: 12px 2px; font-size: .84rem; font-weight: 700; background: transparent; }.button-ghost svg { transition: transform .2s ease; }.button-ghost:hover svg { transform: translateX(4px); }
