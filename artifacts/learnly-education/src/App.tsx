@@ -3,12 +3,17 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   ArrowDownRight,
   ArrowRight,
+  Bell,
+  BookOpen,
   Check,
   ChevronDown,
   ExternalLink,
   GraduationCap,
   Instagram,
+  Loader2,
   Menu,
+  RefreshCw,
+  Send,
   ShieldCheck,
   Users,
   X,
@@ -36,6 +41,9 @@ type FilterKey =
   | 'mentalMath'
   | 'accessibility'
   | 'everyday';
+
+type WorkspaceRole = 'teacher' | 'student' | 'parent';
+const roleKeys: WorkspaceRole[] = ['teacher', 'student', 'parent'];
 
 const audienceKeys: AudienceKey[] = ['parents', 'students', 'teachers', 'examPrep', 'adultLearners'];
 const filterKeys: FilterKey[] = [
@@ -592,6 +600,23 @@ function App() {
   const toastTimer = useRef<number | undefined>(undefined);
   const t = translations[language];
 
+  const [activeRole, setActiveRole] = useState<WorkspaceRole>('teacher');
+  const [contentForm, setContentForm] = useState({
+    title: '',
+    description: '',
+    contentType: 'lesson' as LearningContentInputContentType,
+    level: '',
+    authorName: '',
+  });
+
+  const queryClient = useQueryClient();
+
+  // Student panel polls the shared feed; parent panel polls notifications.
+  // A 15s interval is what makes newly published content and alerts show up
+  // for the other two roles without anyone refreshing the page.
+  const learningContentQuery = useListLearningContent({ query: { queryKey: getListLearningContentQueryKey(), refetchInterval: 15000 } });
+  const notificationsQuery = useListNotifications({ query: { queryKey: getListNotificationsQueryKey(), refetchInterval: 15000 } });
+
   useEffect(() => {
     const onScroll = () => document.querySelector('.topbar')?.classList.toggle('scrolled', window.scrollY > 12);
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -628,6 +653,43 @@ function App() {
     setMenuOpen(false);
   };
 
+  const createContent = useCreateLearningContent({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListLearningContentQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getListNotificationsQueryKey() });
+        setContentForm((current) => ({ ...current, title: '', description: '', level: '' }));
+        notify(t.workspace.teacher.success);
+      },
+    },
+  });
+
+  const markNotificationRead = useMarkNotificationRead({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListNotificationsQueryKey() });
+      },
+    },
+  });
+
+  const updateContentForm = (field: keyof typeof contentForm, value: string) =>
+    setContentForm((current) => ({ ...current, [field]: value }));
+
+  const submitContent = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    createContent.mutate({ data: contentForm });
+  };
+
+  const unreadCount = notificationsQuery.data?.filter((item) => !item.isRead).length ?? 0;
+
+  const formatTimestamp = (value: string | Date) =>
+    new Intl.DateTimeFormat(language === 'tr' ? 'tr-TR' : 'en-US', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(new Date(value));
+
   const selectedAudience = t.audience[activeAudience];
   const filteredResources = t.resources.cards.filter((card) => activeFilter === 'all' || card[4] === activeFilter);
   const updateForm = (field: keyof typeof form, value: string) => setForm((current) => ({ ...current, [field]: value }));
@@ -660,6 +722,7 @@ function App() {
             <button className="nav-link" onClick={() => goTo('resources')} data-testid="link-resources">{t.nav.resources}</button>
             <button className="nav-link" onClick={() => goTo('story')} data-testid="link-story">{t.nav.story}</button>
             <button className="nav-link" onClick={() => goTo('faq')} data-testid="link-faq">{t.nav.faq}</button>
+            <button className="nav-link" onClick={() => goTo('workspace')} data-testid="link-workspace">{t.nav.workspace}</button>
           </nav>
           <div className="nav-actions">
             <div className="language-switch" role="group" aria-label={t.nav.language}>
@@ -797,6 +860,129 @@ function App() {
                   <div className="resource-meta"><span>{card[2]} · {card[3]}</span><strong>{t.resources.open} <ArrowRight size={12} /></strong></div>
                 </article>
               ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section workspace-section" id="workspace">
+          <div className="container-wide">
+            <div className="section-head reveal">
+              <div><p className="section-kicker mono">{t.workspace.kicker}</p><h2 className="section-title display">{t.workspace.title}</h2></div>
+              <p className="section-intro">{t.workspace.intro}</p>
+            </div>
+
+            <div className="role-tabs reveal" role="tablist" aria-label={t.workspace.tabLabel}>
+              {roleKeys.map((key) => (
+                <button key={key} className={`role-tab ${activeRole === key ? 'active' : ''}`} onClick={() => setActiveRole(key)} role="tab" aria-selected={activeRole === key} data-testid={`tab-role-${key}`}>
+                  {key === 'teacher' && <Send size={16} />}
+                  {key === 'student' && <BookOpen size={16} />}
+                  {key === 'parent' && <Bell size={16} />}
+                  <span>{t.workspace.roles[key]}</span>
+                  {key === 'parent' && unreadCount > 0 && <em className="role-badge">{unreadCount}</em>}
+                </button>
+              ))}
+            </div>
+
+            <div className="workspace-panel reveal reveal-delay-1" role="tabpanel">
+              {activeRole === 'teacher' && (
+                <form className="workspace-form" onSubmit={submitContent}>
+                  <p className="workspace-panel-label">{t.workspace.teacher.label}</p>
+                  <div className="field">
+                    <label htmlFor="content-title">{t.workspace.teacher.title}</label>
+                    <input id="content-title" required value={contentForm.title} onChange={(event) => updateContentForm('title', event.target.value)} placeholder={t.workspace.teacher.titlePlaceholder} data-testid="input-content-title" />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="content-description">{t.workspace.teacher.description}</label>
+                    <textarea id="content-description" required value={contentForm.description} onChange={(event) => updateContentForm('description', event.target.value)} placeholder={t.workspace.teacher.descriptionPlaceholder} data-testid="textarea-content-description" />
+                  </div>
+                  <div className="form-row">
+                    <div className="field">
+                      <label htmlFor="content-type">{t.workspace.teacher.type}</label>
+                      <select id="content-type" value={contentForm.contentType} onChange={(event) => updateContentForm('contentType', event.target.value)} data-testid="select-content-type">
+                        {(Object.keys(t.workspace.teacher.types) as LearningContentInputContentType[]).map((type) => (
+                          <option key={type} value={type}>{t.workspace.teacher.types[type]}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="field">
+                      <label htmlFor="content-level">{t.workspace.teacher.level}</label>
+                      <input id="content-level" required value={contentForm.level} onChange={(event) => updateContentForm('level', event.target.value)} placeholder={t.workspace.teacher.levelPlaceholder} data-testid="input-content-level" />
+                    </div>
+                  </div>
+                  <div className="field">
+                    <label htmlFor="content-author">{t.workspace.teacher.author}</label>
+                    <input id="content-author" required value={contentForm.authorName} onChange={(event) => updateContentForm('authorName', event.target.value)} placeholder={t.workspace.teacher.authorPlaceholder} data-testid="input-content-author" />
+                  </div>
+                  <button className="button button-primary" type="submit" disabled={createContent.isPending} data-testid="button-publish-content">
+                    {createContent.isPending ? <Loader2 size={15} className="spin" /> : <Send size={15} />}
+                    {createContent.isPending ? t.workspace.teacher.publishing : t.workspace.teacher.publish}
+                  </button>
+                </form>
+              )}
+
+              {activeRole === 'student' && (
+                <div className="workspace-feed">
+                  <div className="workspace-panel-head">
+                    <p className="workspace-panel-label">{t.workspace.student.label}</p>
+                    <span className="workspace-refresh mono"><RefreshCw size={12} /> {t.workspace.student.refresh}</span>
+                  </div>
+                  <p className="workspace-refresh-detail">{t.workspace.student.refreshDetail}</p>
+                  {learningContentQuery.isLoading && <p className="workspace-status"><Loader2 size={15} className="spin" /> {t.workspace.loading}</p>}
+                  {learningContentQuery.isError && (
+                    <p className="workspace-status">{t.workspace.error} <button className="button-ghost" onClick={() => learningContentQuery.refetch()} data-testid="button-retry-content">{t.workspace.retry}</button></p>
+                  )}
+                  {learningContentQuery.data?.length === 0 && (
+                    <div className="workspace-empty"><p>{t.workspace.student.empty}</p><small>{t.workspace.student.emptyDetail}</small></div>
+                  )}
+                  <div className="content-list">
+                    {learningContentQuery.data?.map((item) => (
+                      <article className="content-card" key={item.id} data-testid={`card-content-${item.id}`}>
+                        <div className="content-card-top">
+                          <span className="resource-type mono">{t.workspace.contentTypes[item.contentType]}</span>
+                          <span className="content-card-level">{item.level}</span>
+                        </div>
+                        <h3>{item.title}</h3>
+                        <p>{item.description}</p>
+                        <div className="content-card-meta"><span>{t.workspace.student.by} {item.authorName}</span><span>{formatTimestamp(item.createdAt)}</span></div>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeRole === 'parent' && (
+                <div className="workspace-feed">
+                  <div className="workspace-panel-head">
+                    <p className="workspace-panel-label">{t.workspace.parent.label}</p>
+                    {unreadCount > 0 && <span className="workspace-unread mono">{unreadCount} {t.workspace.parent.unread}</span>}
+                  </div>
+                  {notificationsQuery.isLoading && <p className="workspace-status"><Loader2 size={15} className="spin" /> {t.workspace.loading}</p>}
+                  {notificationsQuery.isError && (
+                    <p className="workspace-status">{t.workspace.error} <button className="button-ghost" onClick={() => notificationsQuery.refetch()} data-testid="button-retry-notifications">{t.workspace.retry}</button></p>
+                  )}
+                  {notificationsQuery.data?.length === 0 && (
+                    <div className="workspace-empty"><p>{t.workspace.parent.empty}</p><small>{t.workspace.parent.emptyDetail}</small></div>
+                  )}
+                  <div className="notification-list">
+                    {notificationsQuery.data?.map((item) => (
+                      <article className={`notification-item ${item.isRead ? 'read' : ''}`} key={item.id} data-testid={`notification-${item.id}`}>
+                        <div>
+                          <h4>{item.title}</h4>
+                          <p>{item.message}</p>
+                          <span className="mono">{formatTimestamp(item.createdAt)}</span>
+                        </div>
+                        {item.isRead ? (
+                          <span className="notification-read-tag"><Check size={13} /> {t.workspace.parent.markedRead}</span>
+                        ) : (
+                          <button className="button-ghost" onClick={() => markNotificationRead.mutate({ id: item.id })} disabled={markNotificationRead.isPending} data-testid={`button-mark-read-${item.id}`}>
+                            {t.workspace.parent.markRead}
+                          </button>
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </section>
