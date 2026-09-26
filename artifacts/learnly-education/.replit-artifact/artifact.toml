@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Learnly Education"
+description = "A warm, modern education landing page for curious learners to discover practical courses, trusted instructors, and a clear path to their next skill."
+version = "1.0.0"
+id = "artifacts/learnly-education"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24899
+
+[services.development]
+run = "pnpm --filter @workspace/learnly-education run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/learnly-education", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/learnly-education/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24899"
+BASE_PATH = "/"
