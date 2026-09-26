@@ -4,7 +4,9 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
+  ExternalLink,
   GraduationCap,
+  Instagram,
   Menu,
   ShieldCheck,
   Users,
@@ -12,22 +14,44 @@ import {
 } from 'lucide-react';
 
 type Language = 'tr' | 'en';
-type AudienceKey = 'parents' | 'students' | 'teachers';
-type FilterKey = 'all' | 'foundations' | 'algebra' | 'geometry' | 'data' | 'problemSolving';
+type AudienceKey = 'parents' | 'students' | 'teachers' | 'examPrep' | 'adultLearners';
+type FilterKey =
+  | 'all'
+  | 'foundations'
+  | 'algebra'
+  | 'geometry'
+  | 'data'
+  | 'problemSolving'
+  | 'examStrategy'
+  | 'mentalMath'
+  | 'accessibility'
+  | 'everyday';
 
-const audienceKeys: AudienceKey[] = ['parents', 'students', 'teachers'];
-const filterKeys: FilterKey[] = ['all', 'foundations', 'algebra', 'geometry', 'data', 'problemSolving'];
+const audienceKeys: AudienceKey[] = ['parents', 'students', 'teachers', 'examPrep', 'adultLearners'];
+const filterKeys: FilterKey[] = [
+  'all',
+  'foundations',
+  'algebra',
+  'geometry',
+  'data',
+  'problemSolving',
+  'examStrategy',
+  'mentalMath',
+  'accessibility',
+  'everyday',
+];
 
 const translations = {
   tr: {
     nav: {
       audiences: 'Kimin için',
       resources: 'Matematik kaynakları',
+      story: 'Hikâyemiz',
       faq: 'Sorular',
       signIn: 'Giriş yap',
       request: 'Matematik eğitmeni bul',
       language: 'Dil seçimi',
-      home: 'Learnly ana sayfa',
+      home: 'Pinin Peşinde Matematik ana sayfa',
       openMenu: 'Menüyü aç',
       closeMenu: 'Menüyü kapat',
       main: 'Ana navigasyon',
@@ -35,11 +59,11 @@ const translations = {
     hero: {
       eyebrow: 'Günlük hayat için matematik desteği',
       title: 'Matematikte iyi hissetmenin daha net bir yolu.',
-      copy: 'Learnly; aileleri özenli özel eğitmenlerle buluşturur, öğrencilerin güvenini güçlendiren rehberli pratikler sunar ve öğretmenlerin kullanımına güvenilir müfredat kaynakları bırakır.',
+      copy: 'Pinin Peşinde Matematik; aileleri özenli özel eğitmenlerle buluşturur, öğrencilerin güvenini güçlendiren rehberli pratikler sunar ve öğretmenlerin kullanımına güvenilir kaynaklar bırakır.',
       request: 'Eğitmen talep et',
-      seeHow: 'Learnly nasıl yardımcı olur?',
+      seeHow: 'Nasıl yardımcı oluyoruz?',
       trusted: '2.700’den fazla aile tarafından güvenilen, seçilmiş eğitimciler',
-      boardAria: 'Learnly rehberli matematik dersinden bir önizleme',
+      boardAria: 'Pinin Peşinde Matematik rehberli dersinden bir önizleme',
       today: 'Bugünün pratiği',
       gradeTime: '7. sınıf · 12 dk',
       boardTitle: 'Bir soruyu çözmenin birden fazla yolu vardır.',
@@ -56,13 +80,13 @@ const translations = {
       line: 'Daha az kaygı. Daha çok “Şimdi görüyorum.”',
       families: 'aile',
       tutors: 'seçilmiş eğitmen',
-      areas: 'müfredat alanı',
+      areas: 'öğrenme alanı',
     },
     audience: {
       kicker: 'Başlamak için bir yer',
       title: 'İhtiyacın olduğu ana <em>uygun destek.</em>',
-      intro: 'Herkesin desteğe ihtiyaç duyduğu an farklıdır. Learnly’ye kendi bakış açınızı seçin; matematiği insan merkezli tutalım.',
-      tabLabel: 'Learnly toplulukları',
+      intro: 'Ailelerin, öğrencilerin, öğretmenlerin ve matematiğe yeniden dönen yetişkinlerin ihtiyacı farklıdır. Kendi bakış açınızı seçin.',
+      tabLabel: 'Pinin Peşinde Matematik toplulukları',
       parents: {
         name: 'Aileler',
         eyebrow: 'Öğrenenin yanında olanlar için',
@@ -93,7 +117,27 @@ const translations = {
           ['Güveninizi hak eder', 'Her etkinlik matematiksel doğruluk, erişilebilirlik ve gerçek sınıf kullanımı açısından incelenir.'],
         ],
       },
-      actionResources: 'Öğretmen kaynaklarına göz at',
+      examPrep: {
+        name: 'Sınava hazırlananlar',
+        eyebrow: 'Hedefine planla ilerleyenler için',
+        title: 'Sınav telaşını anlaşılır bir plana çevirin.',
+        description: 'LGS, YKS, okul yazılıları veya başka bir hedef için konu haritası çıkarın; süre yönetimini, soru stratejisini ve eksiklerinizi birlikte çalışın.',
+        benefits: [
+          ['Sınav stratejisi', 'Soru seçimi, süre bölüşümü ve deneme sonrası düşünme için size uyan rutinler.'],
+          ['Eksikten hedefe', 'Kısa tanılamalarla hangi konunun gerçekten sıradaki adım olduğunu görün.'],
+        ],
+      },
+      adultLearners: {
+        name: 'Yetişkin öğrenenler',
+        eyebrow: 'Matematiğe yeniden dönenler için',
+        title: 'Geç kalmış değilsiniz; yeniden başlayabilirsiniz.',
+        description: 'Günlük hayat, iş, üniversite ya da merakınız için matematiğe dönün. Yargısız, tempolu ve önceki deneyiminizi hesaba katan bir destek bulun.',
+        benefits: [
+          ['Temeli kendi hızınızda kurun', 'İhtiyaç duyduğunuz konuyu utanmadan, sağlam bir başlangıçla ele alın.'],
+          ['Gerçek hayata taşıyın', 'Bütçe, ölçü, oran ve verilerle matematiğin gündelik karşılığını görün.'],
+        ],
+      },
+      actionResources: 'Kaynaklara göz at',
       actionRequest: 'Eğitmen talebi başlat',
       thirdTeacher: 'Okul gününe uyumlu',
       thirdTeacherCopy: 'Yazdırın, atayın, uyarlayın ve iyi bir matematik sohbetini sürdürün.',
@@ -106,25 +150,42 @@ const translations = {
       curriculum: 'Müfredatı gözetir',
       matching: 'İnsan odaklı eşleşme',
     },
+    story: {
+      kicker: 'Kurucudan bir not',
+      title: 'Matematiği <em>birlikte</em> arıyoruz.',
+      copy: 'Pinin Peşinde Matematik, “Ben matematik insanı değilim” cümlesini daha başlamadan değiştirmek için kuruldu. Kurucumuz, öğrenmenin yalnızca doğru cevabı bulmak değil; iyi bir soru sormak, düşünmeye zaman ayırmak ve bir başkasının yanında yeniden denemek olduğunu biliyor.',
+      note: 'Her yaşta, her başlangıçta, aynı merakla.',
+      instagramLabel: 'Instagram’da bizi takip edin',
+      instagramHandle: '@pininpesindematematik',
+      instagramAria: 'Pinin Peşinde Matematik Instagram hesabını yeni sekmede aç',
+    },
     resources: {
       kicker: 'Kaynak rafı',
       title: 'İyi matematik içeriği, <em>ihtiyacınız olduğunda hazır.</em>',
-      intro: 'Mutfak masasındaki çalışmadan yarının dersine kadar, ikinci kez bakılması gereken fikirler için kısa ve işe yarar kaynaklar.',
+      intro: 'Mutfak masasındaki çalışmadan yarının dersine, sınav stratejisinden bütçe hesabına kadar farklı başlangıçlara uygun kısa ve işe yarar kaynaklar.',
       filterLabel: 'Matematik kaynaklarını filtrele',
       filters: {
         all: 'Tüm kaynaklar',
         foundations: 'Temeller',
         algebra: 'Cebir',
         geometry: 'Geometri',
-        data: 'Veri',
+        data: 'Veri okuryazarlığı',
         problemSolving: 'Problem çözme',
+        examStrategy: 'Sınav stratejisi',
+        mentalMath: 'Zihinden matematik',
+        accessibility: 'Erişilebilir öğrenme',
+        everyday: 'Günlük matematik',
       },
       cards: [
-        ['Kesirlerin sisini dağıtmak', 'Bir bütünün parçalarından farklı paydalı kesirleri karşılaştırmaya görsel bir yol.', '4–6. sınıf', '12 dk'],
-        ['Cebirsel düşünme ısınması', 'Örüntüleri işe yarayan denklemlere dönüştüren, eşiği düşük beş soru.', '6–8. sınıf', '8 dk'],
-        ['π ile daha iyi tanışmak', 'Çemberleri, ipi ve şaşırtıcı bir oranı kullanarak bu sabiti akılda kalıcı hâle getirin.', '7–9. sınıf', '15 dk'],
-        ['Gerçek hayat grafiğini okumak', 'Öğrenenlerin grafikler, eksenler ve gürültülü veriler hakkında daha iyi sorular sormasına yardımcı olun.', '5–8. sınıf', '10 dk'],
-        ['Bir soru, üç strateji', 'Sadece neyin işe yaradığını değil, neden işe yaradığını da anlatmak için eğitmen eşliğinde bir rutin.', 'Tüm seviyeler', '18 dk'],
+        ['Kesirlerin sisini dağıtmak', 'Bir bütünün parçalarından farklı paydalı kesirleri karşılaştırmaya görsel bir yol.', '4–6. sınıf', '12 dk', 'foundations'],
+        ['Zihinden hesap için küçük kestirmeler', 'Alışverişte, yolculukta ve sınıfta sayıları daha esnek düşünmek için kısa rutinler.', 'Tüm seviyeler', '7 dk', 'mentalMath'],
+        ['Cebirsel düşünme ısınması', 'Örüntüleri işe yarayan denklemlere dönüştüren, eşiği düşük beş soru.', '6–8. sınıf', '8 dk', 'algebra'],
+        ['π ile daha iyi tanışmak', 'Çemberleri, ipi ve şaşırtıcı bir oranı kullanarak bu sabiti akılda kalıcı hâle getirin.', '7–9. sınıf', '15 dk', 'geometry'],
+        ['Gerçek hayat grafiğini okumak', 'Grafikler, eksenler ve gürültülü veriler hakkında daha iyi sorular sormayı deneyin.', '5–8. sınıf', '10 dk', 'data'],
+        ['Bir soru, üç strateji', 'Ne işe yaradığını değil, neden işe yaradığını anlatmak için eğitmen eşliğinde bir rutin.', 'Tüm seviyeler', '18 dk', 'problemSolving'],
+        ['Deneme sonrası sakin inceleme', 'Yanlışları puan değil, bir sonraki çalışma adımını gösteren ipuçlarına dönüştürün.', 'LGS · YKS', '14 dk', 'examStrategy'],
+        ['Herkes için matematik dili', 'Okuma, görme ve işlemleme farklılıklarını gözeten yönerge ve temsil fikirleri.', 'Eğitimciler', '11 dk', 'accessibility'],
+        ['Bir tarifin oranlarını değiştirmek', 'Ölçüleri, oranları ve tahmini kullanarak matematiği mutfağın içine taşıyın.', 'Aileler · yetişkinler', '9 dk', 'everyday'],
       ],
       open: 'Aç',
       opened: '“{title}” açıldı.',
@@ -134,17 +195,20 @@ const translations = {
       title: 'Doğru sonraki <em>adımı bulalım.</em>',
       copy: 'Öğrenen ve son zamanlarda zor gelen konular hakkında biraz bilgi paylaşın. Ekibimizden gerçek bir kişi okuyacak ve özenli bir eğitmen eşleşmesiyle size dönüş yapacak.',
       proof: '“Çocuğumun ilk kez ‘Buna nasıl başlayacağımı biliyorum’ dediği an, doğru desteği bulduğumuzu anladım.”',
-      proofBy: '— Nina, Learnly ailesi',
+      proofBy: '— Nina, Pinin Peşinde Matematik ailesi',
       formAudience: 'Ben bir…',
       formLevel: 'Matematik seviyesi',
+      formGoals: 'Öncelikli hedefler',
+      goalsHint: 'Birden fazla seçebilirsiniz',
       formName: 'Adınız',
       formContact: 'E-posta veya telefon',
       formMessage: 'Matematiği ne daha iyi hissettirirdi?',
       namePlaceholder: 'Nina Patel',
       contactPlaceholder: 'nina@eposta.com',
       messagePlaceholder: 'Üzerinde çalışılan konuyu, nerede takıldığınızı veya neyin değişmesini umduğunuzu anlatın.',
-      audienceOptions: ['Aile üyesi', 'Öğrenci', 'Öğretmen'],
+      audienceOptions: ['Aile üyesi', 'Öğrenci', 'Öğretmen', 'Sınava hazırlanan', 'Yetişkin öğrenen'],
       levelOptions: ['İlkokul / üst ilkokul', 'Ortaokul', 'Lise', 'Üniversite / yetişkin öğrenen'],
+      goalOptions: ['Okul desteği', 'Sınava hazırlık', 'Temel beceriler', 'İleri matematik', 'Ödev ve çalışma alışkanlıkları', 'Özgüven geliştirme', 'Öğretmen / sınıf desteği'],
       submit: 'Eğitmen talebini gönder',
       successTitle: 'Notunuzu aldık.',
       successCopy: 'Teşekkürler, {name}. Eşleştirme ekibimiz bir okul günü içinde düşünülmüş bir sonraki adımla size ulaşacak.',
@@ -153,16 +217,17 @@ const translations = {
     quote: {
       text: '“Matematikte hızlı olmaya çalışmayı bıraktım. Onu anlamaya çalışmaya başladım.”',
       name: 'Leo E.',
-      meta: '8. sınıf öğrencisi, Learnly öğrencisi',
+      meta: '8. sınıf öğrencisi, Pinin Peşinde Matematik öğrencisi',
     },
     faq: {
       kicker: 'Birkaç güzel soru',
       title: 'Sormanın <em>yanlış bir tarafı yok.</em>',
-      intro: 'Matematik desteği seçmek kişisel bir karardır. Ailelerin, öğrenenlerin ve öğretmenlerin bize ilk sorduğu şeyler burada.',
+      intro: 'Matematik desteği seçmek kişisel bir karardır. Ailelerin, öğrenenlerin, eğitimcilerin ve yetişkinlerin bize ilk sorduğu şeyler burada.',
       items: [
         ['Bizi özel bir eğitmenle nasıl eşleştiriyorsunuz?', 'Öğreneni, seviyeyi ve hangi desteğin işe yarayacağını anlamak için kısa bir taleple başlayın. Tanıştırmadan önce konu uzmanlığını, öğretme biçimini, uygunluk durumunu ve uyumu birlikte değerlendiririz.'],
-        ['Learnly eğitmenleri hangi yaş ve seviyeleri destekliyor?', 'Ağımız; ilkokulun üst sınıflarından üniversiteye hazırlık matematiğine kadar aritmetik, ön cebir, cebir, geometri, trigonometri, kalkülüs ve istatistik alanlarında destek sunar.'],
-        ['Kaynaklar okul müfredatıyla uyumlu mu?', 'Evet. Her kaynak beceri ve yaş aralığına göre etiketlenir, ardından aktif bir eğitimci tarafından incelenir. Okullarda işlenen kavramları takip ederken farklı öğretme yaklaşımlarına da alan bırakırız.'],
+        ['Sınava hazırlık desteği nasıl ilerliyor?', 'Hedef sınavı ve tarihi birlikte netleştirir, konu önceliklerini çıkarır ve deneme analizini çalışma planına dönüştürürüz. Strateji, süre yönetimi ve konu eksiği aynı resmin parçasıdır.'],
+        ['Matematiğe yetişkin olarak yeniden başlayabilir miyim?', 'Elbette. Başlangıç noktanızı yargılamadan belirler, günlük hayat veya iş hedefinizle bağlantılı bir tempoda temel becerileri yeniden kurarız.'],
+        ['Kaynaklar okul müfredatıyla uyumlu mu?', 'Evet. Her kaynak beceri, yaş aralığı ve kullanım amacına göre etiketlenir, ardından aktif bir eğitimci tarafından incelenir.'],
         ['Eğitmen talebini gönderdikten sonra ne olur?', 'Eşleştirme ekibimizden genellikle bir okul günü içinde özenli bir takip mesajı alırsınız. Önerilen eğitmenle tanışmadan bir görüşme planlama baskısı yoktur.'],
       ],
     },
@@ -177,7 +242,7 @@ const translations = {
       privacyLabel: 'Gizlilik',
       contactLabel: 'İletişim',
       privacy: 'Gizlilik sayfamızı özenle hazırlıyoruz.',
-      contact: 'Bize hello@learnly.example adresinden ulaşın',
+      contact: 'Bize hello@pininpesindematematik.example adresinden ulaşın',
     },
     toasts: {
       signIn: 'Aile hesapları çok yakında burada.',
@@ -188,11 +253,12 @@ const translations = {
     nav: {
       audiences: 'Who it is for',
       resources: 'Math resources',
+      story: 'Our story',
       faq: 'Questions',
       signIn: 'Sign in',
       request: 'Find a math tutor',
       language: 'Language selection',
-      home: 'Learnly home',
+      home: 'Pinin Peşinde Matematik home',
       openMenu: 'Open menu',
       closeMenu: 'Close menu',
       main: 'Main navigation',
@@ -200,11 +266,11 @@ const translations = {
     hero: {
       eyebrow: 'Math support for real life',
       title: 'A clearer way to <em>feel</em> good at math.',
-      copy: 'Learnly helps families find thoughtful private tutors, gives students guided practice that builds confidence, and puts trusted curriculum resources in teachers’ hands.',
+      copy: 'Pinin Peşinde Matematik helps families find thoughtful private tutors, gives students guided practice that builds confidence, and puts trusted resources in educators’ hands.',
       request: 'Request a tutor',
-      seeHow: 'See how Learnly helps',
+      seeHow: 'See how we help',
       trusted: 'Vetted educators, trusted by 2,700+ families',
-      boardAria: 'A preview of a Learnly guided math lesson',
+      boardAria: 'A preview of a Pinin Peşinde Matematik guided math lesson',
       today: 'Today’s practice',
       gradeTime: 'Grade 7 · 12 min',
       boardTitle: 'There is more than one way to solve it.',
@@ -221,44 +287,49 @@ const translations = {
       line: 'Less panic. More “I can see it now.”',
       families: 'families',
       tutors: 'vetted tutors',
-      areas: 'curriculum areas',
+      areas: 'learning areas',
     },
     audience: {
       kicker: 'A place to start',
       title: 'Support that meets <em>the moment.</em>',
-      intro: 'Different people need different kinds of help. Choose your view of Learnly—we will keep the math human.',
-      tabLabel: 'Learnly audiences',
+      intro: 'Families, students, teachers, exam learners, and adults returning to math all need different things. Choose your view.',
+      tabLabel: 'Pinin Peşinde Matematik communities',
       parents: {
-        name: 'Parents',
+        name: 'Families',
         eyebrow: 'For the people in their corner',
         title: 'Find a tutor who sees the whole child.',
         description: 'Tell us what your learner needs, and we will introduce you to thoughtful, vetted math tutors who teach with patience, clarity, and a plan.',
-        benefits: [
-          ['A considered match', 'Tutor recommendations shaped around level, goals, personality, and availability.'],
-          ['Clear progress notes', 'Know what clicked, what needs practice, and what to do next after each session.'],
-        ],
+        benefits: [['A considered match', 'Tutor recommendations shaped around level, goals, personality, and availability.'], ['Clear progress notes', 'Know what clicked, what needs practice, and what to do next after each session.']],
       },
       students: {
         name: 'Students',
         eyebrow: 'For the quietly determined',
         title: 'Make math feel possible again.',
         description: 'Build confidence one good question at a time with guided practice, friendly explanations, and tutors who never make you feel behind.',
-        benefits: [
-          ['Practice with purpose', 'Short, focused problems that help you notice the idea underneath the answer.'],
-          ['A place to ask', 'Bring the question you were afraid to ask in class. We will start exactly there.'],
-        ],
+        benefits: [['Practice with purpose', 'Short, focused problems that help you notice the idea underneath the answer.'], ['A place to ask', 'Bring the question you were afraid to ask in class. We will start exactly there.']],
       },
       teachers: {
         name: 'Teachers',
         eyebrow: 'For people who teach the thinking',
         title: 'Resources you can put to work tomorrow.',
         description: 'Browse curriculum-aligned tasks, explanations, and classroom prompts made by practicing math educators—not content factories.',
-        benefits: [
-          ['Curriculum aligned', 'Resources mapped to familiar learning goals across elementary, middle, and high school.'],
-          ['Worth your trust', 'Every activity is reviewed for mathematical accuracy, accessibility, and real classroom use.'],
-        ],
+        benefits: [['Curriculum aligned', 'Resources mapped to familiar learning goals across elementary, middle, and high school.'], ['Worth your trust', 'Every activity is reviewed for mathematical accuracy, accessibility, and real classroom use.']],
       },
-      actionResources: 'Browse teacher resources',
+      examPrep: {
+        name: 'Exam prep',
+        eyebrow: 'For focused, steady progress',
+        title: 'Turn exam pressure into a clear plan.',
+        description: 'For LGS, YKS, school tests, or another goal, map the topics, practice timing, and review mistakes with a tutor who keeps the plan human.',
+        benefits: [['Exam strategy', 'Question selection, pacing, and post-practice reflection built around your habits.'], ['From gaps to goals', 'Short check-ins reveal which topic is truly the next step.']],
+      },
+      adultLearners: {
+        name: 'Adult learners',
+        eyebrow: 'For people returning to math',
+        title: 'It is not too late to begin again.',
+        description: 'Return to math for daily life, work, university, or curiosity with support that respects your experience, your pace, and your starting point.',
+        benefits: [['Build the base at your pace', 'Work on the topic you need without shame, with a steady beginning.'], ['Carry it into life', 'See the everyday meaning of budgets, measurement, ratios, and data.']],
+      },
+      actionResources: 'Browse resources',
       actionRequest: 'Start a tutoring request',
       thirdTeacher: 'Made for the school day',
       thirdTeacherCopy: 'Print, assign, adapt, and keep the good conversation going.',
@@ -271,25 +342,42 @@ const translations = {
       curriculum: 'Curriculum-aware',
       matching: 'Human matching',
     },
+    story: {
+      kicker: 'A note from the founder',
+      title: 'We are following math <em>together.</em>',
+      copy: 'Pinin Peşinde Matematik was started to change the sentence “I am not a math person” before it stops someone from beginning. Our founder believes learning is not only finding the right answer; it is asking a useful question, making room to think, and trying again beside someone.',
+      note: 'Every age, every starting point, the same curiosity.',
+      instagramLabel: 'Follow along on Instagram',
+      instagramHandle: '@pininpesindematematik',
+      instagramAria: 'Open the Pinin Peşinde Matematik Instagram account in a new tab',
+    },
     resources: {
       kicker: 'The resource shelf',
       title: 'Good math content, <em>ready when you are.</em>',
-      intro: 'Short, useful resources for the ideas that tend to need a second look—at the kitchen table or in tomorrow’s lesson.',
+      intro: 'Short, useful resources for the kitchen table, tomorrow’s lesson, exam strategy, everyday budgets, and many ways of learning.',
       filterLabel: 'Filter math resources',
       filters: {
         all: 'All resources',
         foundations: 'Foundations',
         algebra: 'Algebra',
         geometry: 'Geometry',
-        data: 'Data',
+        data: 'Data literacy',
         problemSolving: 'Problem solving',
+        examStrategy: 'Exam strategy',
+        mentalMath: 'Mental math',
+        accessibility: 'Accessible learning',
+        everyday: 'Everyday math',
       },
       cards: [
-        ['Fractions without the fog', 'A visual route from parts of a whole to comparing unlike fractions.', 'Grades 4–6', '12 min'],
-        ['The algebraic thinking warm-up', 'Five low-floor prompts that turn patterns into useful equations.', 'Grades 6–8', '8 min'],
-        ['A better way to meet π', 'Use circles, string, and one surprising ratio to make the constant stick.', 'Grades 7–9', '15 min'],
-        ['Reading a real-world graph', 'Help learners ask better questions of charts, axes, and noisy data.', 'Grades 5–8', '10 min'],
-        ['One problem, three strategies', 'A tutor-led routine for explaining not only what works, but why.', 'All levels', '18 min'],
+        ['Fractions without the fog', 'A visual route from parts of a whole to comparing unlike fractions.', 'Grades 4–6', '12 min', 'foundations'],
+        ['Small shortcuts for mental math', 'Flexible number routines for shopping, travel, and the classroom.', 'All levels', '7 min', 'mentalMath'],
+        ['The algebraic thinking warm-up', 'Five low-floor prompts that turn patterns into useful equations.', 'Grades 6–8', '8 min', 'algebra'],
+        ['A better way to meet π', 'Use circles, string, and one surprising ratio to make the constant stick.', 'Grades 7–9', '15 min', 'geometry'],
+        ['Reading a real-world graph', 'Help learners ask better questions of charts, axes, and noisy data.', 'Grades 5–8', '10 min', 'data'],
+        ['One problem, three strategies', 'A tutor-led routine for explaining not only what works, but why.', 'All levels', '18 min', 'problemSolving'],
+        ['A calm review after a practice test', 'Turn missed questions into clues for the next study step, not a score.', 'LGS · YKS', '14 min', 'examStrategy'],
+        ['A math language for everyone', 'Prompting and representation ideas that respect different ways of reading, seeing, and processing.', 'Educators', '11 min', 'accessibility'],
+        ['Changing the ratio in a recipe', 'Bring measurement, ratios, and estimation into the kitchen and daily life.', 'Families · adults', '9 min', 'everyday'],
       ],
       open: 'Open',
       opened: 'Opened “{title}”.',
@@ -299,17 +387,20 @@ const translations = {
       title: 'Let’s find the <em>right next step.</em>',
       copy: 'Share a little about the learner and what has been hard lately. A real person on our team will read it and follow up with a considered tutor match.',
       proof: '“The first time my daughter said, ‘I know how to start this,’ I knew we had found the right support.”',
-      proofBy: '— Nina, Learnly parent',
+      proofBy: '— Nina, Pinin Peşinde Matematik family',
       formAudience: 'I am a…',
       formLevel: 'Math level',
+      formGoals: 'Priority goals',
+      goalsHint: 'Choose as many as you like',
       formName: 'Your name',
       formContact: 'Email or phone',
       formMessage: 'What would make math feel better?',
       namePlaceholder: 'Nina Patel',
       contactPlaceholder: 'nina@email.com',
       messagePlaceholder: 'Tell us what they are working on, what feels stuck, or what you hope will change.',
-      audienceOptions: ['Parent', 'Student', 'Teacher'],
+      audienceOptions: ['Family member', 'Student', 'Teacher', 'Exam learner', 'Adult learner'],
       levelOptions: ['Elementary / upper elementary', 'Middle school', 'High school', 'College / adult learner'],
+      goalOptions: ['School support', 'Exam preparation', 'Foundational skills', 'Advanced mathematics', 'Homework and study habits', 'Confidence building', 'Teacher / classroom support'],
       submit: 'Send tutoring request',
       successTitle: 'We have your note.',
       successCopy: 'Thanks, {name}. Our matching team will be in touch within one school day with a thoughtful next step.',
@@ -318,16 +409,17 @@ const translations = {
     quote: {
       text: '“I stopped trying to be <em>fast</em> at math. I started trying to understand it.”',
       name: 'Leo E.',
-      meta: 'Grade 8 learner, Learnly student',
+      meta: 'Grade 8 learner, Pinin Peşinde Matematik student',
     },
     faq: {
       kicker: 'A few good questions',
       title: 'Nothing silly <em>about asking.</em>',
-      intro: 'Choosing math support is personal. Here are the things families, learners, and teachers ask us first.',
+      intro: 'Choosing math support is personal. Here are the things families, learners, educators, and adults ask us first.',
       items: [
         ['How do you match us with a private tutor?', 'Start with a short request so we can understand the learner, the level, and the kind of support that would help. We look at subject expertise, teaching style, availability, and fit before making an introduction.'],
-        ['What ages and levels do Learnly tutors support?', 'Our network supports learners from upper elementary through college-prep mathematics, including arithmetic, pre-algebra, algebra, geometry, trigonometry, calculus, and statistics.'],
-        ['Are the resources aligned to school curriculum?', 'Yes. Each resource is tagged by skill and age band, then reviewed by a practicing educator. We follow the concepts schools are teaching while leaving room for different teaching approaches.'],
+        ['How does exam preparation work?', 'We clarify the target and date, map topic priorities, and turn practice-test review into a study plan. Strategy, pacing, and content gaps are all part of the picture.'],
+        ['Can I return to math as an adult?', 'Absolutely. We find your starting point without judgment and rebuild the skills you need at a pace connected to daily life, work, or study.'],
+        ['Are the resources aligned to school curriculum?', 'Yes. Each resource is tagged by skill, age band, and use case, then reviewed by a practicing educator.'],
         ['What happens after I send a tutoring request?', 'You will receive a thoughtful follow-up from our matching team, usually within one school day. There is no pressure to book a session before you have met the suggested tutor.'],
       ],
     },
@@ -342,7 +434,7 @@ const translations = {
       privacyLabel: 'Privacy',
       contactLabel: 'Contact',
       privacy: 'Our privacy page is being written with care.',
-      contact: 'Say hello at hello@learnly.example',
+      contact: 'Say hello at hello@pininpesindematematik.example',
     },
     toasts: {
       signIn: 'Family accounts are coming soon.',
@@ -351,15 +443,7 @@ const translations = {
   },
 } as const;
 
-const resourceCategories: Record<number, FilterKey> = {
-  0: 'foundations',
-  1: 'algebra',
-  2: 'geometry',
-  3: 'data',
-  4: 'problemSolving',
-};
-
-const symbols = ['⅜', 'x + 4', 'πr²', '↗', '∴'];
+const symbols = ['⅜', '≈', 'x + 4', 'πr²', '↗', '∴', '15:40', '□', '%'];
 
 function App() {
   const [language, setLanguage] = useState<Language>('tr');
@@ -368,7 +452,14 @@ function App() {
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [requestSent, setRequestSent] = useState(false);
-  const [form, setForm] = useState({ audience: 'Aile üyesi', level: 'İlkokul / üst ilkokul', name: '', contact: '', message: '' });
+  const [form, setForm] = useState({
+    audience: 'Aile üyesi',
+    level: 'İlkokul / üst ilkokul',
+    goals: [] as string[],
+    name: '',
+    contact: '',
+    message: '',
+  });
   const [toast, setToast] = useState('');
   const toastTimer = useRef<number | undefined>(undefined);
   const t = translations[language];
@@ -387,15 +478,16 @@ function App() {
     }), { threshold: 0.13 });
     items.forEach((item) => observer.observe(item));
     return () => observer.disconnect();
-  }, []);
+  }, [language, activeFilter, activeAudience]);
 
   useEffect(() => {
     setForm((current) => ({
       ...current,
-      audience: t.request.audienceOptions[language === 'tr' ? 0 : 0],
-      level: t.request.levelOptions[language === 'tr' ? 0 : 0],
+      audience: t.request.audienceOptions[0],
+      level: t.request.levelOptions[0],
+      goals: [],
     }));
-  }, [language, t.request.audienceOptions, t.request.levelOptions]);
+  }, [language]);
 
   const notify = (message: string) => {
     setToast(message);
@@ -409,11 +501,12 @@ function App() {
   };
 
   const selectedAudience = t.audience[activeAudience];
-  const filteredResources = t.resources.cards
-    .map((card, index) => ({ card, index }))
-    .filter(({ index }) => activeFilter === 'all' || resourceCategories[index] === activeFilter);
-
+  const filteredResources = t.resources.cards.filter((card) => activeFilter === 'all' || card[4] === activeFilter);
   const updateForm = (field: keyof typeof form, value: string) => setForm((current) => ({ ...current, [field]: value }));
+  const toggleGoal = (goal: string) => setForm((current) => ({
+    ...current,
+    goals: current.goals.includes(goal) ? current.goals.filter((item) => item !== goal) : [...current.goals, goal],
+  }));
 
   const submitRequest = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -432,11 +525,12 @@ function App() {
         <div className="nav-inner">
           <button className="wordmark" onClick={() => goTo('top')} data-testid="button-home" aria-label={t.nav.home}>
             <span className="wordmark-mark" aria-hidden="true" />
-            Learnly
+            <span className="wordmark-copy"><strong>Learnly</strong><small>Pinin Peşinde Matematik</small></span>
           </button>
           <nav className="nav-links" aria-label={t.nav.main}>
             <button className="nav-link" onClick={() => goTo('audiences')} data-testid="link-audiences">{t.nav.audiences}</button>
             <button className="nav-link" onClick={() => goTo('resources')} data-testid="link-resources">{t.nav.resources}</button>
+            <button className="nav-link" onClick={() => goTo('story')} data-testid="link-story">{t.nav.story}</button>
             <button className="nav-link" onClick={() => goTo('faq')} data-testid="link-faq">{t.nav.faq}</button>
           </nav>
           <div className="nav-actions">
@@ -535,6 +629,27 @@ function App() {
           </div>
         </section>
 
+        <section className="section story-section" id="story">
+          <div className="container-wide story-grid">
+            <div className="story-paper reveal">
+              <span className="story-mark" aria-hidden="true">∴</span>
+              <p className="story-hand">{t.story.note}</p>
+              <div className="story-line" />
+              <p className="mono">Pinin Peşinde Matematik</p>
+            </div>
+            <div className="story-copy reveal reveal-delay-1">
+              <p className="section-kicker mono">{t.story.kicker}</p>
+              <h2 className="section-title display" dangerouslySetInnerHTML={{ __html: t.story.title }} />
+              <p>{t.story.copy}</p>
+              <a className="instagram-link" href="https://www.instagram.com/pininpesindematematik/" target="_blank" rel="noreferrer" aria-label={t.story.instagramAria} data-testid="link-instagram">
+                <span className="instagram-icon"><Instagram size={18} /></span>
+                <span><strong>{t.story.instagramLabel}</strong><small>{t.story.instagramHandle}</small></span>
+                <ExternalLink size={15} />
+              </a>
+            </div>
+          </div>
+        </section>
+
         <section className="section resources-section" id="resources">
           <div className="container-wide">
             <div className="section-head reveal">
@@ -547,9 +662,9 @@ function App() {
               ))}
             </div>
             <div className="resource-grid">
-              {filteredResources.map(({ card, index }) => (
+              {filteredResources.map((card, index) => (
                 <article className={`resource-card reveal reveal-delay-${(index % 3) + 1}`} key={card[0]} onClick={() => notify(t.resources.opened.replace('{title}', card[0]))} data-testid={`card-resource-${index}`}>
-                  <div className="resource-top"><span className="resource-symbol" aria-hidden="true">{symbols[index]}</span><span className="resource-type mono">{t.resources.filters[resourceCategories[index]]}</span></div>
+                  <div className="resource-top"><span className="resource-symbol" aria-hidden="true">{symbols[index % symbols.length]}</span><span className="resource-type mono">{t.resources.filters[card[4]]}</span></div>
                   <div><h3 className="display">{card[0]}</h3><p>{card[1]}</p></div>
                   <div className="resource-meta"><span>{card[2]} · {card[3]}</span><strong>{t.resources.open} <ArrowRight size={12} /></strong></div>
                 </article>
@@ -580,6 +695,7 @@ function App() {
                     <div className="field"><label htmlFor="request-audience">{t.request.formAudience}</label><select id="request-audience" value={form.audience} onChange={(event) => updateForm('audience', event.target.value)} data-testid="select-request-audience">{t.request.audienceOptions.map((option) => <option key={option}>{option}</option>)}</select></div>
                     <div className="field"><label htmlFor="request-level">{t.request.formLevel}</label><select id="request-level" value={form.level} onChange={(event) => updateForm('level', event.target.value)} data-testid="select-request-level">{t.request.levelOptions.map((option) => <option key={option}>{option}</option>)}</select></div>
                   </div>
+                  <fieldset className="goals-field"><legend>{t.request.formGoals} <small>{t.request.goalsHint}</small></legend><div className="goal-options">{t.request.goalOptions.map((goal) => <label className={`goal-option ${form.goals.includes(goal) ? 'selected' : ''}`} key={goal}><input type="checkbox" checked={form.goals.includes(goal)} onChange={() => toggleGoal(goal)} data-testid={`checkbox-goal-${goal}`} /><span>{goal}</span></label>)}</div></fieldset>
                   <div className="form-row">
                     <div className="field"><label htmlFor="request-name">{t.request.formName}</label><input id="request-name" required value={form.name} onChange={(event) => updateForm('name', event.target.value)} placeholder={t.request.namePlaceholder} data-testid="input-request-name" /></div>
                     <div className="field"><label htmlFor="request-contact">{t.request.formContact}</label><input id="request-contact" required value={form.contact} onChange={(event) => updateForm('contact', event.target.value)} placeholder={t.request.contactPlaceholder} data-testid="input-request-contact" /></div>
@@ -616,7 +732,7 @@ function App() {
       </main>
 
       <footer className="footer">
-        <div className="container-wide footer-inner"><button className="wordmark" onClick={() => goTo('top')} data-testid="button-footer-home"><span className="wordmark-mark" aria-hidden="true" />Learnly</button><span className="footer-meta">{t.footer.meta}</span><div className="footer-links"><button onClick={() => notify(t.footer.privacy)} data-testid="button-privacy">{t.footer.privacyLabel}</button><button onClick={() => notify(t.footer.contact)} data-testid="button-contact">{t.footer.contactLabel}</button></div></div>
+        <div className="container-wide footer-inner"><button className="wordmark" onClick={() => goTo('top')} data-testid="button-footer-home"><span className="wordmark-mark" aria-hidden="true" /><span className="wordmark-copy"><strong>Learnly</strong><small>Pinin Peşinde Matematik</small></span></button><span className="footer-meta">{t.footer.meta}</span><div className="footer-links"><button onClick={() => notify(t.footer.privacy)} data-testid="button-privacy">{t.footer.privacyLabel}</button><button onClick={() => notify(t.footer.contact)} data-testid="button-contact">{t.footer.contactLabel}</button></div></div>
       </footer>
       <div className={`toast ${toast ? 'show' : ''}`} role="status" aria-live="polite" data-testid="status-toast">{toast || ' '}</div>
     </div>
