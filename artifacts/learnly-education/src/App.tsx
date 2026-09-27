@@ -130,9 +130,9 @@ const translations = {
         name: 'Öğretmenler',
         eyebrow: 'Düşünmeyi öğretenler için',
         title: 'Yarın kullanabileceğiniz kaynaklar.',
-        description: 'İçerik fabrikaları değil, aktif olarak matematik öğreten eğitimciler tarafından hazırlanan müfredat uyumlu etkinlikleri, açıklamaları ve sınıf fikirlerini keşfedin.',
+        description: 'İçerik fabrikaları değil, aktif olarak matematik öğreten eğitimciler tarafından hazırlanan; Türkiye Yüzyılı Maarif Modeli’nin beceri temelli yaklaşımıyla uyumlu etkinlikleri, açıklamaları ve sınıf fikirlerini keşfedin.',
         benefits: [
-          ['Müfredatla uyumlu', 'İlkokul, ortaokul ve lise düzeylerindeki tanıdık öğrenme hedefleriyle eşleşen kaynaklar.'],
+          ['Maarif Modeli’ne uyumlu', 'İlkokul, ortaokul ve lise kademelerindeki güncel öğrenme çıktılarıyla ve beceri çerçevesiyle eşleşen kaynaklar.'],
           ['Güveninizi hak eder', 'Her etkinlik matematiksel doğruluk, erişilebilirlik ve gerçek sınıf kullanımı açısından incelenir.'],
         ],
       },
@@ -226,7 +226,7 @@ const translations = {
       contactPlaceholder: 'nina@eposta.com',
       messagePlaceholder: 'Üzerinde çalışılan konuyu, nerede takıldığınızı veya neyin değişmesini umduğunuzu anlatın.',
       audienceOptions: ['Aile üyesi', 'Öğrenci', 'Öğretmen', 'Sınava hazırlanan', 'Yetişkin öğrenen'],
-      levelOptions: ['İlkokul / üst ilkokul', 'Ortaokul', 'Lise', 'Üniversite / yetişkin öğrenen'],
+      levelOptions: ['İlkokul (1–4. sınıf)', 'Ortaokul (5–8. sınıf)', 'Lise (9–12. sınıf)', 'Üniversite / yetişkin öğrenen'],
       goalOptions: ['Okul desteği', 'Sınava hazırlık', 'Temel beceriler', 'İleri matematik', 'Ödev ve çalışma alışkanlıkları', 'Özgüven geliştirme', 'Öğretmen / sınıf desteği'],
       submit: 'Eğitmen talebini gönder',
       successTitle: 'Notunuzu aldık.',
@@ -246,7 +246,7 @@ const translations = {
         ['Bizi özel bir eğitmenle nasıl eşleştiriyorsunuz?', 'Öğreneni, seviyeyi ve hangi desteğin işe yarayacağını anlamak için kısa bir taleple başlayın. Tanıştırmadan önce konu uzmanlığını, öğretme biçimini, uygunluk durumunu ve uyumu birlikte değerlendiririz.'],
         ['Sınava hazırlık desteği nasıl ilerliyor?', 'Hedef sınavı ve tarihi birlikte netleştirir, konu önceliklerini çıkarır ve deneme analizini çalışma planına dönüştürürüz. Strateji, süre yönetimi ve konu eksiği aynı resmin parçasıdır.'],
         ['Matematiğe yetişkin olarak yeniden başlayabilir miyim?', 'Elbette. Başlangıç noktanızı yargılamadan belirler, günlük hayat veya iş hedefinizle bağlantılı bir tempoda temel becerileri yeniden kurarız.'],
-        ['Kaynaklar okul müfredatıyla uyumlu mu?', 'Evet. Her kaynak beceri, yaş aralığı ve kullanım amacına göre etiketlenir, ardından aktif bir eğitimci tarafından incelenir.'],
+        ['Kaynaklar okul müfredatıyla uyumlu mu?', 'Evet. Kaynaklarımızı Türkiye Yüzyılı Maarif Modeli’nin beceri çerçevesini gözeterek hazırlıyoruz; her biri kademe, yaş aralığı ve kullanım amacına göre etiketlenir, ardından aktif bir eğitimci tarafından incelenir.'],
         ['Eğitmen talebini gönderdikten sonra ne olur?', 'Eşleştirme ekibimizden genellikle bir okul günü içinde özenli bir takip mesajı alırsınız. Önerilen eğitmenle tanışmadan bir görüşme planlama baskısı yoktur.'],
       ],
     },
@@ -717,20 +717,22 @@ function App() {
             <span className="wordmark-mark" aria-hidden="true" />
             <span className="wordmark-copy"><strong>Learnly</strong><small>Pinin Peşinde Matematik</small></span>
           </button>
-          <nav className="nav-links" aria-label={t.nav.main}>
-            <button className="nav-link" onClick={() => goTo('audiences')} data-testid="link-audiences">{t.nav.audiences}</button>
-            <button className="nav-link" onClick={() => goTo('resources')} data-testid="link-resources">{t.nav.resources}</button>
-            <button className="nav-link" onClick={() => goTo('story')} data-testid="link-story">{t.nav.story}</button>
-            <button className="nav-link" onClick={() => goTo('faq')} data-testid="link-faq">{t.nav.faq}</button>
-            <button className="nav-link" onClick={() => goTo('workspace')} data-testid="link-workspace">{t.nav.workspace}</button>
-          </nav>
-          <div className="nav-actions">
-            <div className="language-switch" role="group" aria-label={t.nav.language}>
-              <button className={language === 'tr' ? 'active' : ''} onClick={() => changeLanguage('tr')} aria-pressed={language === 'tr'} data-testid="button-language-tr">TR</button>
-              <button className={language === 'en' ? 'active' : ''} onClick={() => changeLanguage('en')} aria-pressed={language === 'en'} data-testid="button-language-en">EN</button>
+          <div className="nav-panel">
+            <nav className="nav-links" aria-label={t.nav.main}>
+              <button className="nav-link" onClick={() => goTo('audiences')} data-testid="link-audiences">{t.nav.audiences}</button>
+              <button className="nav-link" onClick={() => goTo('resources')} data-testid="link-resources">{t.nav.resources}</button>
+              <button className="nav-link" onClick={() => goTo('story')} data-testid="link-story">{t.nav.story}</button>
+              <button className="nav-link" onClick={() => goTo('faq')} data-testid="link-faq">{t.nav.faq}</button>
+              <button className="nav-link" onClick={() => goTo('workspace')} data-testid="link-workspace">{t.nav.workspace}</button>
+            </nav>
+            <div className="nav-actions">
+              <div className="language-switch" role="group" aria-label={t.nav.language}>
+                <button className={language === 'tr' ? 'active' : ''} onClick={() => changeLanguage('tr')} aria-pressed={language === 'tr'} data-testid="button-language-tr">TR</button>
+                <button className={language === 'en' ? 'active' : ''} onClick={() => changeLanguage('en')} aria-pressed={language === 'en'} data-testid="button-language-en">EN</button>
+              </div>
+              <button className="nav-login" onClick={() => notify(t.toasts.signIn)} data-testid="button-sign-in">{t.nav.signIn}</button>
+              <button className="button button-primary" onClick={() => goTo('request')} data-testid="button-request-nav">{t.nav.request} <ArrowRight size={15} /></button>
             </div>
-            <button className="nav-login" onClick={() => notify(t.toasts.signIn)} data-testid="button-sign-in">{t.nav.signIn}</button>
-            <button className="button button-primary" onClick={() => goTo('request')} data-testid="button-request-nav">{t.nav.request} <ArrowRight size={15} /></button>
           </div>
           <button className="menu-toggle" onClick={() => setMenuOpen((open) => !open)} aria-label={menuOpen ? t.nav.closeMenu : t.nav.openMenu} aria-expanded={menuOpen} data-testid="button-mobile-menu">
             {menuOpen ? <X size={23} /> : <Menu size={23} />}

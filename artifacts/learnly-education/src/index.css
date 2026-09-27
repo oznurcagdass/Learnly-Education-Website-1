@@ -66,6 +66,7 @@
 .button-primary { color: var(--paper); background: var(--indigo); padding: 13px 18px; border-radius: 7px; font-size: .82rem; font-weight: 700; box-shadow: 3px 3px 0 var(--indigo-deep); }.button-primary:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0 var(--indigo-deep); background: #3b4380; }
 .button-ghost { color: var(--ink); padding: 12px 2px; font-size: .84rem; font-weight: 700; background: transparent; }.button-ghost svg { transition: transform .2s ease; }.button-ghost:hover svg { transform: translateX(4px); }
 .menu-toggle { display: none; background: transparent; border: 0; color: var(--ink); padding: 6px; cursor: pointer; }
+.nav-panel { display: contents; }
 
 .hero { min-height: 700px; padding: 96px 0 104px; position: relative; overflow: hidden; }.hero::before { content: ''; position: absolute; width: 520px; height: 520px; right: -160px; top: 55px; border-radius: 50%; background: var(--lime); opacity: .3; filter: blur(2px); }
 .hero-grid { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 78px; position: relative; }.eyebrow { color: var(--indigo); display: flex; align-items: center; gap: 10px; margin: 0 0 20px; }.eyebrow::before { content: ''; width: 30px; height: 1px; background: currentColor; }
@@ -135,7 +136,14 @@
 .goals-field { border: 0; padding: 0; margin: 0 0 15px; }.goals-field legend { width: 100%; padding: 0; margin-bottom: 8px; font-size: .73rem; font-weight: 700; }.goals-field legend small { color: var(--ink-soft); font-size: .62rem; font-weight: 400; margin-left: 5px; }.goal-options { display: flex; flex-wrap: wrap; gap: 6px; }.goal-option { display: inline-flex; align-items: center; gap: 7px; color: var(--ink-soft); border: 1px solid rgba(32,36,61,.18); border-radius: 999px; padding: 7px 9px; cursor: pointer; font-size: .68rem; transition: background .2s ease, color .2s ease, border-color .2s ease; }.goal-option input { position: absolute; opacity: 0; pointer-events: none; }.goal-option.selected { color: var(--paper); border-color: var(--indigo); background: var(--indigo); }.goal-option::before { content: ''; width: 10px; height: 10px; border: 1px solid currentColor; border-radius: 2px; }.goal-option.selected::before { background: var(--lime); box-shadow: inset 0 0 0 2px var(--indigo); }
 
 @media (max-width: 800px) {
-  .container-wide, .nav-inner { width: min(100% - 34px, 620px); }.nav-links, .nav-actions { display: none; }.menu-toggle { display: block; }.topbar.menu-open { border-color: var(--line); height: auto; min-height: 73px; }.topbar.menu-open .nav-links { display: flex; position: absolute; top: 72px; left: 0; right: 0; padding: 16px 17px 22px; background: var(--paper); border-bottom: 1px solid var(--line); flex-direction: column; align-items: flex-start; gap: 18px; }.topbar.menu-open .nav-actions { display: flex; position: absolute; top: 194px; left: 17px; }.topbar.menu-open .nav-login { display: none; }
+  .container-wide, .nav-inner { width: min(100% - 34px, 620px); }.nav-links, .nav-actions { display: none; }.menu-toggle { display: block; }.topbar.menu-open { border-color: var(--line); height: auto; min-height: 73px; }
+  /* Menü açıkken linkler ve altındaki eylemler (dil seçici, buton) tek bir
+     akışta dikey olarak dizilir; hiçbiri sabit bir piksel değeriyle
+     konumlanmaz, böylece link sayısı artıp azalsa da asla üst üste binmez. */
+  .topbar.menu-open .nav-panel { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; position: absolute; top: 72px; left: 0; right: 0; padding: 16px 17px 22px; background: var(--paper); border-bottom: 1px solid var(--line); max-height: calc(100vh - 72px); overflow-y: auto; }
+  .topbar.menu-open .nav-links { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; width: 100%; }
+  .topbar.menu-open .nav-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+  .topbar.menu-open .nav-login { display: none; }
   .hero { padding: 69px 0 82px; min-height: auto; }.hero-grid { grid-template-columns: 1fr; gap: 57px; }.hero h1 { font-size: clamp(3.5rem, 16vw, 6rem); }.hero-copy { font-size: .98rem; }.math-board { height: 370px; max-width: 510px; margin: 0 auto; width: 100%; }.math-card { inset: 15px 28px 3px 0; }.math-title { margin-top: 28px; font-size: 2.2rem; }.math-equation { font-size: 2.8rem; margin: 18px 0 20px; }.floating-note { right: -4px; }
   .signal-inner { align-items: flex-start; flex-direction: column; gap: 12px; }.signal-list { flex-wrap: wrap; gap: 15px; }.section { padding: 86px 0; }.section-head { display: block; margin-bottom: 37px; }.section-intro { margin-top: 22px; }
   .audience-tabs, .role-tabs { grid-template-columns: 1fr; }
