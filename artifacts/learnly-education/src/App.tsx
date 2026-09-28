@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowDownRight,
   ArrowRight,
@@ -7,17 +7,24 @@ import {
   BookOpen,
   Check,
   ChevronDown,
+  Download,
   ExternalLink,
+  FileText,
   GraduationCap,
   Instagram,
   Loader2,
+  LogIn,
+  LogOut,
   Menu,
   RefreshCw,
   Send,
   ShieldCheck,
+  Upload,
   Users,
   X,
 } from 'lucide-react';
+import { authErrorMessage, fetchMe, loginUser, logoutUser, registerUser, type AuthUser, type Role } from '@/lib/auth';
+import { listUploadedResources, resourceFileUrl, uploadResource } from '@/lib/resources-api';
 import {
   getListLearningContentQueryKey,
   getListNotificationsQueryKey,
@@ -58,6 +65,8 @@ const filterKeys: FilterKey[] = [
   'accessibility',
   'everyday',
 ];
+const resourceCategoryKeys = filterKeys.filter((key): key is Exclude<FilterKey, 'all'> => key !== 'all');
+const authRoleKeys: Role[] = ['teacher', 'parent', 'student'];
 
 const translations = {
   tr: {
@@ -74,6 +83,32 @@ const translations = {
       openMenu: 'Menüyü aç',
       closeMenu: 'Menüyü kapat',
       main: 'Ana navigasyon',
+    },
+    auth: {
+      loginTitle: 'Giriş yap',
+      registerTitle: 'Hesap oluştur',
+      loginTab: 'Giriş yap',
+      registerTab: 'Kayıt ol',
+      nameLabel: 'Ad soyad',
+      namePlaceholder: 'Ayşe Öğretmen',
+      emailLabel: 'E-posta',
+      emailPlaceholder: 'ornek@eposta.com',
+      passwordLabel: 'Şifre',
+      passwordHint: 'En az 8 karakter',
+      roleLabel: 'Hesap türü',
+      roleOptions: { teacher: 'Öğretmen', parent: 'Veli', student: 'Öğrenci' },
+      submitLogin: 'Giriş yap',
+      submitRegister: 'Hesap oluştur',
+      submitting: 'Gönderiliyor…',
+      switchToRegister: 'Hesabınız yok mu? Kayıt olun',
+      switchToLogin: 'Zaten hesabınız var mı? Giriş yapın',
+      close: 'Kapat',
+      loggedInAs: 'Hoş geldin, {name}',
+      logout: 'Çıkış yap',
+      genericError: 'Bir şeyler ters gitti, lütfen tekrar deneyin.',
+      loginSuccess: 'Giriş yapıldı.',
+      registerSuccess: 'Hesabınız oluşturuldu.',
+      logoutSuccess: 'Çıkış yapıldı.',
     },
     hero: {
       eyebrow: 'Günlük hayat için matematik desteği',
@@ -208,6 +243,31 @@ const translations = {
       ],
       open: 'Aç',
       opened: '“{title}” açıldı.',
+      pdfBadge: 'PDF',
+      download: 'İndir',
+      uploadedBy: 'Yükleyen',
+      loadError: 'Kaynaklar yüklenemedi.',
+      retry: 'Tekrar dene',
+      upload: {
+        heading: 'Kaynak yükle',
+        intro: 'Öğretmenler, ders notu ve çalışma kâğıtlarını PDF olarak buraya yükleyebilir — bu rafta anında herkese görünür olur.',
+        loginPrompt: 'Kaynak yüklemek için öğretmen hesabıyla giriş yapmalısınız.',
+        loginCta: 'Giriş yap',
+        rolePrompt: 'Kaynak yükleme yalnızca öğretmen hesaplarına açıktır.',
+        titleLabel: 'Başlık',
+        titlePlaceholder: 'Kesirler Çalışma Kâğıdı',
+        descriptionLabel: 'Açıklama',
+        descriptionPlaceholder: 'Bu kaynağın ne içerdiğini kısaca anlatın.',
+        levelLabel: 'Seviye',
+        levelPlaceholder: 'ör. 5–6. sınıf',
+        categoryLabel: 'Kategori',
+        fileLabel: 'PDF dosyası',
+        fileHint: 'Yalnızca PDF, en fazla 15MB',
+        submit: 'Yükle',
+        submitting: 'Yükleniyor…',
+        success: 'Kaynak yayınlandı.',
+        error: 'Yükleme başarısız oldu.',
+      },
     },
     request: {
       kicker: 'Bir sohbetle başlayın',
@@ -341,6 +401,32 @@ const translations = {
       closeMenu: 'Close menu',
       main: 'Main navigation',
     },
+    auth: {
+      loginTitle: 'Sign in',
+      registerTitle: 'Create an account',
+      loginTab: 'Sign in',
+      registerTab: 'Sign up',
+      nameLabel: 'Full name',
+      namePlaceholder: 'Ada Lovelace',
+      emailLabel: 'Email',
+      emailPlaceholder: 'you@example.com',
+      passwordLabel: 'Password',
+      passwordHint: 'At least 8 characters',
+      roleLabel: 'Account type',
+      roleOptions: { teacher: 'Teacher', parent: 'Parent', student: 'Student' },
+      submitLogin: 'Sign in',
+      submitRegister: 'Create account',
+      submitting: 'Submitting…',
+      switchToRegister: "Don't have an account? Sign up",
+      switchToLogin: 'Already have an account? Sign in',
+      close: 'Close',
+      loggedInAs: 'Welcome, {name}',
+      logout: 'Sign out',
+      genericError: 'Something went wrong, please try again.',
+      loginSuccess: 'Signed in.',
+      registerSuccess: 'Your account was created.',
+      logoutSuccess: 'Signed out.',
+    },
     hero: {
       eyebrow: 'Math support for real life',
       title: 'A clearer way to <em>feel</em> good at math.',
@@ -459,6 +545,31 @@ const translations = {
       ],
       open: 'Open',
       opened: 'Opened “{title}”.',
+      pdfBadge: 'PDF',
+      download: 'Download',
+      uploadedBy: 'Uploaded by',
+      loadError: 'Could not load resources.',
+      retry: 'Retry',
+      upload: {
+        heading: 'Upload a resource',
+        intro: 'Teachers can upload lesson notes and worksheets as a PDF — it appears on this shelf for everyone right away.',
+        loginPrompt: 'Sign in with a teacher account to upload resources.',
+        loginCta: 'Sign in',
+        rolePrompt: 'Uploading resources is only available to teacher accounts.',
+        titleLabel: 'Title',
+        titlePlaceholder: 'Fractions Worksheet',
+        descriptionLabel: 'Description',
+        descriptionPlaceholder: 'Briefly describe what this resource covers.',
+        levelLabel: 'Level',
+        levelPlaceholder: 'e.g. grades 5–6',
+        categoryLabel: 'Category',
+        fileLabel: 'PDF file',
+        fileHint: 'PDF only, up to 15MB',
+        submit: 'Upload',
+        submitting: 'Uploading…',
+        success: 'Resource published.',
+        error: 'Upload failed.',
+      },
     },
     request: {
       kicker: 'Start with a conversation',
@@ -617,6 +728,35 @@ function App() {
   const learningContentQuery = useListLearningContent({ query: { queryKey: getListLearningContentQueryKey(), refetchInterval: 15000 } });
   const notificationsQuery = useListNotifications({ query: { queryKey: getListNotificationsQueryKey(), refetchInterval: 15000 } });
 
+  // --- Kimlik doğrulama ---
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authForm, setAuthForm] = useState({ name: '', email: '', password: '', role: 'teacher' as Role });
+  const [authSubmitting, setAuthSubmitting] = useState(false);
+  const [authError, setAuthError] = useState('');
+
+  useEffect(() => {
+    fetchMe().then(setCurrentUser);
+  }, []);
+
+  // --- Kaynak rafı: yüklenen PDF'ler ---
+  const uploadedResourcesQuery = useQuery({ queryKey: ['uploaded-resources'], queryFn: listUploadedResources });
+  const [uploadForm, setUploadForm] = useState({ title: '', description: '', level: '', category: 'foundations' as string });
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const uploadMutation = useMutation({
+    mutationFn: () => {
+      if (!uploadFile) throw new Error('no-file');
+      return uploadResource({ ...uploadForm, file: uploadFile });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['uploaded-resources'] });
+      setUploadForm({ title: '', description: '', level: '', category: 'foundations' });
+      setUploadFile(null);
+      notify(t.resources.upload.success);
+    },
+  });
+
   useEffect(() => {
     const onScroll = () => document.querySelector('.topbar')?.classList.toggle('scrolled', window.scrollY > 12);
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -680,6 +820,64 @@ function App() {
     createContent.mutate({ data: contentForm });
   };
 
+  const updateAuthForm = (field: keyof typeof authForm, value: string) =>
+    setAuthForm((current) => ({ ...current, [field]: value }));
+
+  const openAuth = (mode: 'login' | 'register') => {
+    setAuthMode(mode);
+    setAuthError('');
+    setAuthOpen(true);
+  };
+
+  const closeAuth = () => {
+    setAuthOpen(false);
+    setAuthError('');
+  };
+
+  const submitAuth = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setAuthSubmitting(true);
+    setAuthError('');
+    try {
+      const user = authMode === 'login'
+        ? await loginUser({ email: authForm.email, password: authForm.password })
+        : await registerUser(authForm);
+      setCurrentUser(user);
+      setAuthOpen(false);
+      setAuthForm({ name: '', email: '', password: '', role: 'teacher' });
+      notify(authMode === 'login' ? t.auth.loginSuccess : t.auth.registerSuccess);
+    } catch (error) {
+      setAuthError(authErrorMessage(error, t.auth.genericError));
+    } finally {
+      setAuthSubmitting(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await logoutUser();
+    setCurrentUser(null);
+    notify(t.auth.logoutSuccess);
+  };
+
+  const updateUploadForm = (field: keyof typeof uploadForm, value: string) =>
+    setUploadForm((current) => ({ ...current, [field]: value }));
+
+  const submitUpload = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!uploadFile) return;
+    uploadMutation.mutate();
+  };
+
+  const uploadedResources = uploadedResourcesQuery.data ?? [];
+  const filteredUploadedResources = uploadedResources.filter(
+    (resource) => activeFilter === 'all' || resource.category === activeFilter,
+  );
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
   const unreadCount = notificationsQuery.data?.filter((item) => !item.isRead).length ?? 0;
 
   const formatTimestamp = (value: string | Date) =>
@@ -730,7 +928,14 @@ function App() {
                 <button className={language === 'tr' ? 'active' : ''} onClick={() => changeLanguage('tr')} aria-pressed={language === 'tr'} data-testid="button-language-tr">TR</button>
                 <button className={language === 'en' ? 'active' : ''} onClick={() => changeLanguage('en')} aria-pressed={language === 'en'} data-testid="button-language-en">EN</button>
               </div>
-              <button className="nav-login" onClick={() => notify(t.toasts.signIn)} data-testid="button-sign-in">{t.nav.signIn}</button>
+              {currentUser ? (
+                <div className="nav-account">
+                  <span className="nav-account-name">{t.auth.loggedInAs.replace('{name}', currentUser.name)}</span>
+                  <button className="nav-login" onClick={handleLogout} data-testid="button-sign-out"><LogOut size={14} /> {t.auth.logout}</button>
+                </div>
+              ) : (
+                <button className="nav-login" onClick={() => openAuth('login')} data-testid="button-sign-in"><LogIn size={14} /> {t.nav.signIn}</button>
+              )}
               <button className="button button-primary" onClick={() => goTo('request')} data-testid="button-request-nav">{t.nav.request} <ArrowRight size={15} /></button>
             </div>
           </div>
@@ -862,6 +1067,63 @@ function App() {
                   <div className="resource-meta"><span>{card[2]} · {card[3]}</span><strong>{t.resources.open} <ArrowRight size={12} /></strong></div>
                 </article>
               ))}
+              {filteredUploadedResources.map((resource, index) => (
+                <article className={`resource-card resource-card-pdf reveal reveal-delay-${(index % 3) + 1}`} key={`upload-${resource.id}`} data-testid={`card-uploaded-resource-${resource.id}`}>
+                  <div className="resource-top"><span className="resource-symbol resource-symbol-pdf" aria-hidden="true"><FileText size={16} /></span><span className="resource-type mono">{t.resources.filters[resource.category as FilterKey] ?? resource.category}</span></div>
+                  <div><h3 className="display">{resource.title}</h3><p>{resource.description}</p></div>
+                  <div className="resource-meta"><span>{resource.level} · {t.resources.uploadedBy} {resource.uploadedByName}</span>
+                    <a className="resource-download" href={resourceFileUrl(resource.id)} target="_blank" rel="noreferrer" data-testid={`link-download-${resource.id}`}>{t.resources.download} <Download size={12} /></a>
+                  </div>
+                </article>
+              ))}
+            </div>
+            {uploadedResourcesQuery.isError && (
+              <p className="workspace-status">{t.resources.loadError} <button className="button-ghost" onClick={() => uploadedResourcesQuery.refetch()} data-testid="button-retry-resources">{t.resources.retry}</button></p>
+            )}
+
+            <div className="resource-upload-panel reveal">
+              <p className="workspace-panel-label"><Upload size={16} /> {t.resources.upload.heading}</p>
+              <p className="resource-upload-intro">{t.resources.upload.intro}</p>
+              {!currentUser && (
+                <p className="resource-upload-gate">{t.resources.upload.loginPrompt} <button className="button-ghost" onClick={() => openAuth('login')} data-testid="button-upload-login">{t.resources.upload.loginCta}</button></p>
+              )}
+              {currentUser && currentUser.role !== 'teacher' && (
+                <p className="resource-upload-gate">{t.resources.upload.rolePrompt}</p>
+              )}
+              {currentUser && currentUser.role === 'teacher' && (
+                <form className="workspace-form" onSubmit={submitUpload}>
+                  <div className="field">
+                    <label htmlFor="resource-title">{t.resources.upload.titleLabel}</label>
+                    <input id="resource-title" required value={uploadForm.title} onChange={(event) => updateUploadForm('title', event.target.value)} placeholder={t.resources.upload.titlePlaceholder} data-testid="input-resource-title" />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="resource-description">{t.resources.upload.descriptionLabel}</label>
+                    <textarea id="resource-description" required value={uploadForm.description} onChange={(event) => updateUploadForm('description', event.target.value)} placeholder={t.resources.upload.descriptionPlaceholder} data-testid="textarea-resource-description" />
+                  </div>
+                  <div className="form-row">
+                    <div className="field">
+                      <label htmlFor="resource-category">{t.resources.upload.categoryLabel}</label>
+                      <select id="resource-category" value={uploadForm.category} onChange={(event) => updateUploadForm('category', event.target.value)} data-testid="select-resource-category">
+                        {resourceCategoryKeys.map((key) => <option key={key} value={key}>{t.resources.filters[key]}</option>)}
+                      </select>
+                    </div>
+                    <div className="field">
+                      <label htmlFor="resource-level">{t.resources.upload.levelLabel}</label>
+                      <input id="resource-level" required value={uploadForm.level} onChange={(event) => updateUploadForm('level', event.target.value)} placeholder={t.resources.upload.levelPlaceholder} data-testid="input-resource-level" />
+                    </div>
+                  </div>
+                  <div className="field">
+                    <label htmlFor="resource-file">{t.resources.upload.fileLabel}</label>
+                    <input id="resource-file" type="file" required accept="application/pdf" onChange={(event) => setUploadFile(event.target.files?.[0] ?? null)} data-testid="input-resource-file" />
+                    <small className="field-hint">{t.resources.upload.fileHint}{uploadFile ? ` · ${uploadFile.name} (${formatFileSize(uploadFile.size)})` : ''}</small>
+                  </div>
+                  {uploadMutation.isError && <p className="auth-error" role="alert">{authErrorMessage(uploadMutation.error, t.resources.upload.error)}</p>}
+                  <button className="button button-primary" type="submit" disabled={uploadMutation.isPending || !uploadFile} data-testid="button-upload-resource">
+                    {uploadMutation.isPending ? <Loader2 size={15} className="spin" /> : <Upload size={15} />}
+                    {uploadMutation.isPending ? t.resources.upload.submitting : t.resources.upload.submit}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         </section>
@@ -1050,6 +1312,51 @@ function App() {
       <footer className="footer">
         <div className="container-wide footer-inner"><button className="wordmark" onClick={() => goTo('top')} data-testid="button-footer-home"><span className="wordmark-mark" aria-hidden="true" /><span className="wordmark-copy"><strong>Learnly</strong><small>Pinin Peşinde Matematik</small></span></button><span className="footer-meta">{t.footer.meta}</span><div className="footer-links"><button onClick={() => notify(t.footer.privacy)} data-testid="button-privacy">{t.footer.privacyLabel}</button><button onClick={() => notify(t.footer.contact)} data-testid="button-contact">{t.footer.contactLabel}</button></div></div>
       </footer>
+      {authOpen && (
+        <div className="auth-overlay" onClick={closeAuth} data-testid="overlay-auth">
+          <div className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title" onClick={(event) => event.stopPropagation()}>
+            <button className="auth-close" onClick={closeAuth} aria-label={t.auth.close} data-testid="button-auth-close"><X size={18} /></button>
+            <h2 id="auth-title" className="auth-title">{authMode === 'login' ? t.auth.loginTitle : t.auth.registerTitle}</h2>
+            <div className="auth-tabs" role="tablist">
+              <button className={authMode === 'login' ? 'active' : ''} onClick={() => openAuth('login')} role="tab" aria-selected={authMode === 'login'} data-testid="tab-auth-login">{t.auth.loginTab}</button>
+              <button className={authMode === 'register' ? 'active' : ''} onClick={() => openAuth('register')} role="tab" aria-selected={authMode === 'register'} data-testid="tab-auth-register">{t.auth.registerTab}</button>
+            </div>
+            <form className="auth-form" onSubmit={submitAuth}>
+              {authMode === 'register' && (
+                <div className="field">
+                  <label htmlFor="auth-name">{t.auth.nameLabel}</label>
+                  <input id="auth-name" required minLength={2} autoComplete="name" value={authForm.name} onChange={(event) => updateAuthForm('name', event.target.value)} placeholder={t.auth.namePlaceholder} data-testid="input-auth-name" />
+                </div>
+              )}
+              <div className="field">
+                <label htmlFor="auth-email">{t.auth.emailLabel}</label>
+                <input id="auth-email" type="email" required autoComplete="email" value={authForm.email} onChange={(event) => updateAuthForm('email', event.target.value)} placeholder={t.auth.emailPlaceholder} data-testid="input-auth-email" />
+              </div>
+              <div className="field">
+                <label htmlFor="auth-password">{t.auth.passwordLabel}</label>
+                <input id="auth-password" type="password" required minLength={authMode === 'register' ? 8 : 1} autoComplete={authMode === 'login' ? 'current-password' : 'new-password'} value={authForm.password} onChange={(event) => updateAuthForm('password', event.target.value)} data-testid="input-auth-password" />
+                {authMode === 'register' && <small className="field-hint">{t.auth.passwordHint}</small>}
+              </div>
+              {authMode === 'register' && (
+                <div className="field">
+                  <label htmlFor="auth-role">{t.auth.roleLabel}</label>
+                  <select id="auth-role" value={authForm.role} onChange={(event) => updateAuthForm('role', event.target.value)} data-testid="select-auth-role">
+                    {authRoleKeys.map((key) => <option key={key} value={key}>{t.auth.roleOptions[key]}</option>)}
+                  </select>
+                </div>
+              )}
+              {authError && <p className="auth-error" role="alert" data-testid="text-auth-error">{authError}</p>}
+              <button className="button button-primary" type="submit" disabled={authSubmitting} data-testid="button-auth-submit">
+                {authSubmitting ? <Loader2 size={15} className="spin" /> : <LogIn size={15} />}
+                {authSubmitting ? t.auth.submitting : authMode === 'login' ? t.auth.submitLogin : t.auth.submitRegister}
+              </button>
+            </form>
+            <button className="auth-switch" onClick={() => openAuth(authMode === 'login' ? 'register' : 'login')} data-testid="button-auth-switch">
+              {authMode === 'login' ? t.auth.switchToRegister : t.auth.switchToLogin}
+            </button>
+          </div>
+        </div>
+      )}
       <div className={`toast ${toast ? 'show' : ''}`} role="status" aria-live="polite" data-testid="status-toast">{toast || ' '}</div>
     </div>
   );
