@@ -61,8 +61,8 @@ type FilterKey =
   | 'accessibility'
   | 'everyday';
 
-type WorkspaceRole = 'teacher' | 'student' | 'parent' | 'examAnalysis';
-const roleKeys: WorkspaceRole[] = ['teacher', 'student', 'parent', 'examAnalysis'];
+type WorkspaceRole = 'teacher' | 'student' | 'parent';
+const roleKeys: WorkspaceRole[] = ['teacher', 'student', 'parent'];
 
 const audienceKeys: AudienceKey[] = ['parents', 'students', 'teachers', 'examPrep', 'adultLearners'];
 const filterKeys: FilterKey[] = [
@@ -1219,51 +1219,6 @@ function App() {
             {uploadedResourcesQuery.isError && (
               <p className="workspace-status">{t.resources.loadError} <button className="button-ghost" onClick={() => uploadedResourcesQuery.refetch()} data-testid="button-retry-resources">{t.resources.retry}</button></p>
             )}
-
-            <div className="resource-upload-panel reveal">
-              <p className="workspace-panel-label"><Upload size={16} /> {t.resources.upload.heading}</p>
-              <p className="resource-upload-intro">{t.resources.upload.intro}</p>
-              {!currentUser && (
-                <p className="resource-upload-gate">{t.resources.upload.loginPrompt} <button className="button-ghost" onClick={() => openAuth('login')} data-testid="button-upload-login">{t.resources.upload.loginCta}</button></p>
-              )}
-              {currentUser && currentUser.role !== 'teacher' && (
-                <p className="resource-upload-gate">{t.resources.upload.rolePrompt}</p>
-              )}
-              {currentUser && currentUser.role === 'teacher' && (
-                <form className="workspace-form" onSubmit={submitUpload}>
-                  <div className="field">
-                    <label htmlFor="resource-title">{t.resources.upload.titleLabel}</label>
-                    <input id="resource-title" required value={uploadForm.title} onChange={(event) => updateUploadForm('title', event.target.value)} placeholder={t.resources.upload.titlePlaceholder} data-testid="input-resource-title" />
-                  </div>
-                  <div className="field">
-                    <label htmlFor="resource-description">{t.resources.upload.descriptionLabel}</label>
-                    <textarea id="resource-description" required value={uploadForm.description} onChange={(event) => updateUploadForm('description', event.target.value)} placeholder={t.resources.upload.descriptionPlaceholder} data-testid="textarea-resource-description" />
-                  </div>
-                  <div className="form-row">
-                    <div className="field">
-                      <label htmlFor="resource-category">{t.resources.upload.categoryLabel}</label>
-                      <select id="resource-category" value={uploadForm.category} onChange={(event) => updateUploadForm('category', event.target.value)} data-testid="select-resource-category">
-                        {resourceCategoryKeys.map((key) => <option key={key} value={key}>{t.resources.filters[key]}</option>)}
-                      </select>
-                    </div>
-                    <div className="field">
-                      <label htmlFor="resource-level">{t.resources.upload.levelLabel}</label>
-                      <input id="resource-level" required value={uploadForm.level} onChange={(event) => updateUploadForm('level', event.target.value)} placeholder={t.resources.upload.levelPlaceholder} data-testid="input-resource-level" />
-                    </div>
-                  </div>
-                  <div className="field">
-                    <label htmlFor="resource-file">{t.resources.upload.fileLabel}</label>
-                    <input id="resource-file" type="file" required accept="application/pdf" onChange={(event) => setUploadFile(event.target.files?.[0] ?? null)} data-testid="input-resource-file" />
-                    <small className="field-hint">{t.resources.upload.fileHint}{uploadFile ? ` · ${uploadFile.name} (${formatFileSize(uploadFile.size)})` : ''}</small>
-                  </div>
-                  {uploadMutation.isError && <p className="auth-error" role="alert">{authErrorMessage(uploadMutation.error, t.resources.upload.error)}</p>}
-                  <button className="button button-primary" type="submit" disabled={uploadMutation.isPending || !uploadFile} data-testid="button-upload-resource">
-                    {uploadMutation.isPending ? <Loader2 size={15} className="spin" /> : <Upload size={15} />}
-                    {uploadMutation.isPending ? t.resources.upload.submitting : t.resources.upload.submit}
-                  </button>
-                </form>
-              )}
-            </div>
           </div>
         </section>
 
@@ -1276,82 +1231,236 @@ function App() {
 
             <div className="role-tabs reveal" role="tablist" aria-label={t.workspace.tabLabel}>
               {roleKeys.map((key) => (
-                <button key={key} className={`role-tab ${activeRole === key ? 'active' : ''}`} onClick={() => setActiveRole(key)} role="tab" aria-selected={activeRole === key} data-testid={`tab-role-${key}`}>
+                <button key={key} className={`role-tab ${activeRole === key ? 'active' : ''}`} onClick={() => setActiveRole(key)} role="tab" aria-selected={activeRole === key} data-role={key} data-testid={`tab-role-${key}`}>
                   {key === 'teacher' && <Send size={16} />}
                   {key === 'student' && <BookOpen size={16} />}
                   {key === 'parent' && <Bell size={16} />}
-                  {key === 'examAnalysis' && <TrendingUp size={16} />}
                   <span>{t.workspace.roles[key]}</span>
                   {key === 'parent' && unreadCount > 0 && <em className="role-badge">{unreadCount}</em>}
                 </button>
               ))}
             </div>
 
-            <div className="workspace-panel reveal reveal-delay-1" role="tabpanel">
+            <div className="workspace-panel reveal reveal-delay-1" role="tabpanel" data-workspace-role={activeRole}>
               {activeRole === 'teacher' && (
-                <form className="workspace-form" onSubmit={submitContent}>
-                  <p className="workspace-panel-label">{t.workspace.teacher.label}</p>
-                  <div className="field">
-                    <label htmlFor="content-title">{t.workspace.teacher.title}</label>
-                    <input id="content-title" required value={contentForm.title} onChange={(event) => updateContentForm('title', event.target.value)} placeholder={t.workspace.teacher.titlePlaceholder} data-testid="input-content-title" />
-                  </div>
-                  <div className="field">
-                    <label htmlFor="content-description">{t.workspace.teacher.description}</label>
-                    <textarea id="content-description" required value={contentForm.description} onChange={(event) => updateContentForm('description', event.target.value)} placeholder={t.workspace.teacher.descriptionPlaceholder} data-testid="textarea-content-description" />
-                  </div>
-                  <div className="form-row">
+                <>
+                  <form className="workspace-form" onSubmit={submitContent}>
+                    <p className="workspace-panel-label">{t.workspace.teacher.label}</p>
                     <div className="field">
-                      <label htmlFor="content-type">{t.workspace.teacher.type}</label>
-                      <select id="content-type" value={contentForm.contentType} onChange={(event) => updateContentForm('contentType', event.target.value)} data-testid="select-content-type">
-                        {(Object.keys(t.workspace.teacher.types) as LearningContentInputContentType[]).map((type) => (
-                          <option key={type} value={type}>{t.workspace.teacher.types[type]}</option>
-                        ))}
-                      </select>
+                      <label htmlFor="content-title">{t.workspace.teacher.title}</label>
+                      <input id="content-title" required value={contentForm.title} onChange={(event) => updateContentForm('title', event.target.value)} placeholder={t.workspace.teacher.titlePlaceholder} data-testid="input-content-title" />
                     </div>
                     <div className="field">
-                      <label htmlFor="content-level">{t.workspace.teacher.level}</label>
-                      <input id="content-level" required value={contentForm.level} onChange={(event) => updateContentForm('level', event.target.value)} placeholder={t.workspace.teacher.levelPlaceholder} data-testid="input-content-level" />
+                      <label htmlFor="content-description">{t.workspace.teacher.description}</label>
+                      <textarea id="content-description" required value={contentForm.description} onChange={(event) => updateContentForm('description', event.target.value)} placeholder={t.workspace.teacher.descriptionPlaceholder} data-testid="textarea-content-description" />
                     </div>
+                    <div className="form-row">
+                      <div className="field">
+                        <label htmlFor="content-type">{t.workspace.teacher.type}</label>
+                        <select id="content-type" value={contentForm.contentType} onChange={(event) => updateContentForm('contentType', event.target.value)} data-testid="select-content-type">
+                          {(Object.keys(t.workspace.teacher.types) as LearningContentInputContentType[]).map((type) => (
+                            <option key={type} value={type}>{t.workspace.teacher.types[type]}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="field">
+                        <label htmlFor="content-level">{t.workspace.teacher.level}</label>
+                        <input id="content-level" required value={contentForm.level} onChange={(event) => updateContentForm('level', event.target.value)} placeholder={t.workspace.teacher.levelPlaceholder} data-testid="input-content-level" />
+                      </div>
+                    </div>
+                    <div className="field">
+                      <label htmlFor="content-author">{t.workspace.teacher.author}</label>
+                      <input id="content-author" required value={contentForm.authorName} onChange={(event) => updateContentForm('authorName', event.target.value)} placeholder={t.workspace.teacher.authorPlaceholder} data-testid="input-content-author" />
+                    </div>
+                    <button className="button button-primary" type="submit" disabled={createContent.isPending} data-testid="button-publish-content">
+                      {createContent.isPending ? <Loader2 size={15} className="spin" /> : <Send size={15} />}
+                      {createContent.isPending ? t.workspace.teacher.publishing : t.workspace.teacher.publish}
+                    </button>
+                  </form>
+
+                  <hr className="workspace-divider" />
+
+                  <div className="resource-upload-panel">
+                    <p className="workspace-panel-label"><Upload size={16} /> {t.resources.upload.heading}</p>
+                    <p className="resource-upload-intro">{t.resources.upload.intro}</p>
+                    {!currentUser && (
+                      <p className="resource-upload-gate">{t.resources.upload.loginPrompt} <button className="button-ghost" onClick={() => openAuth('login')} data-testid="button-upload-login">{t.resources.upload.loginCta}</button></p>
+                    )}
+                    {currentUser && currentUser.role !== 'teacher' && (
+                      <p className="resource-upload-gate">{t.resources.upload.rolePrompt}</p>
+                    )}
+                    {currentUser?.role === 'teacher' && (
+                      <form className="workspace-form" onSubmit={submitUpload}>
+                        <div className="field">
+                          <label htmlFor="resource-title">{t.resources.upload.titleLabel}</label>
+                          <input id="resource-title" required value={uploadForm.title} onChange={(event) => updateUploadForm('title', event.target.value)} placeholder={t.resources.upload.titlePlaceholder} data-testid="input-resource-title" />
+                        </div>
+                        <div className="field">
+                          <label htmlFor="resource-description">{t.resources.upload.descriptionLabel}</label>
+                          <textarea id="resource-description" required value={uploadForm.description} onChange={(event) => updateUploadForm('description', event.target.value)} placeholder={t.resources.upload.descriptionPlaceholder} data-testid="textarea-resource-description" />
+                        </div>
+                        <div className="form-row">
+                          <div className="field">
+                            <label htmlFor="resource-category">{t.resources.upload.categoryLabel}</label>
+                            <select id="resource-category" value={uploadForm.category} onChange={(event) => updateUploadForm('category', event.target.value)} data-testid="select-resource-category">
+                              {resourceCategoryKeys.map((key) => <option key={key} value={key}>{t.resources.filters[key]}</option>)}
+                            </select>
+                          </div>
+                          <div className="field">
+                            <label htmlFor="resource-level">{t.resources.upload.levelLabel}</label>
+                            <input id="resource-level" required value={uploadForm.level} onChange={(event) => updateUploadForm('level', event.target.value)} placeholder={t.resources.upload.levelPlaceholder} data-testid="input-resource-level" />
+                          </div>
+                        </div>
+                        <div className="field">
+                          <label htmlFor="resource-file">{t.resources.upload.fileLabel}</label>
+                          <input id="resource-file" type="file" required accept="application/pdf" onChange={(event) => setUploadFile(event.target.files?.[0] ?? null)} data-testid="input-resource-file" />
+                          <small className="field-hint">{t.resources.upload.fileHint}{uploadFile ? ` · ${uploadFile.name} (${formatFileSize(uploadFile.size)})` : ''}</small>
+                        </div>
+                        {uploadMutation.isError && <p className="auth-error" role="alert">{authErrorMessage(uploadMutation.error, t.resources.upload.error)}</p>}
+                        <button className="button button-primary" type="submit" disabled={uploadMutation.isPending || !uploadFile} data-testid="button-upload-resource">
+                          {uploadMutation.isPending ? <Loader2 size={15} className="spin" /> : <Upload size={15} />}
+                          {uploadMutation.isPending ? t.resources.upload.submitting : t.resources.upload.submit}
+                        </button>
+                      </form>
+                    )}
                   </div>
-                  <div className="field">
-                    <label htmlFor="content-author">{t.workspace.teacher.author}</label>
-                    <input id="content-author" required value={contentForm.authorName} onChange={(event) => updateContentForm('authorName', event.target.value)} placeholder={t.workspace.teacher.authorPlaceholder} data-testid="input-content-author" />
-                  </div>
-                  <button className="button button-primary" type="submit" disabled={createContent.isPending} data-testid="button-publish-content">
-                    {createContent.isPending ? <Loader2 size={15} className="spin" /> : <Send size={15} />}
-                    {createContent.isPending ? t.workspace.teacher.publishing : t.workspace.teacher.publish}
-                  </button>
-                </form>
+                </>
               )}
 
               {activeRole === 'student' && (
-                <div className="workspace-feed">
-                  <div className="workspace-panel-head">
-                    <p className="workspace-panel-label">{t.workspace.student.label}</p>
-                    <span className="workspace-refresh mono"><RefreshCw size={12} /> {t.workspace.student.refresh}</span>
+                <>
+                  <div className="workspace-feed">
+                    <div className="workspace-panel-head">
+                      <p className="workspace-panel-label">{t.workspace.student.label}</p>
+                      <span className="workspace-refresh mono"><RefreshCw size={12} /> {t.workspace.student.refresh}</span>
+                    </div>
+                    <p className="workspace-refresh-detail">{t.workspace.student.refreshDetail}</p>
+                    {learningContentQuery.isLoading && <p className="workspace-status"><Loader2 size={15} className="spin" /> {t.workspace.loading}</p>}
+                    {learningContentQuery.isError && (
+                      <p className="workspace-status">{t.workspace.error} <button className="button-ghost" onClick={() => learningContentQuery.refetch()} data-testid="button-retry-content">{t.workspace.retry}</button></p>
+                    )}
+                    {learningContentQuery.data?.length === 0 && (
+                      <div className="workspace-empty"><p>{t.workspace.student.empty}</p><small>{t.workspace.student.emptyDetail}</small></div>
+                    )}
+                    <div className="content-list">
+                      {learningContentQuery.data?.map((item) => (
+                        <article className="content-card" key={item.id} data-testid={`card-content-${item.id}`}>
+                          <div className="content-card-top">
+                            <span className="resource-type mono">{t.workspace.contentTypes[item.contentType]}</span>
+                            <span className="content-card-level">{item.level}</span>
+                          </div>
+                          <h3>{item.title}</h3>
+                          <p>{item.description}</p>
+                          <div className="content-card-meta"><span>{t.workspace.student.by} {item.authorName}</span><span>{formatTimestamp(item.createdAt)}</span></div>
+                        </article>
+                      ))}
+                    </div>
                   </div>
-                  <p className="workspace-refresh-detail">{t.workspace.student.refreshDetail}</p>
-                  {learningContentQuery.isLoading && <p className="workspace-status"><Loader2 size={15} className="spin" /> {t.workspace.loading}</p>}
-                  {learningContentQuery.isError && (
-                    <p className="workspace-status">{t.workspace.error} <button className="button-ghost" onClick={() => learningContentQuery.refetch()} data-testid="button-retry-content">{t.workspace.retry}</button></p>
-                  )}
-                  {learningContentQuery.data?.length === 0 && (
-                    <div className="workspace-empty"><p>{t.workspace.student.empty}</p><small>{t.workspace.student.emptyDetail}</small></div>
-                  )}
-                  <div className="content-list">
-                    {learningContentQuery.data?.map((item) => (
-                      <article className="content-card" key={item.id} data-testid={`card-content-${item.id}`}>
-                        <div className="content-card-top">
-                          <span className="resource-type mono">{t.workspace.contentTypes[item.contentType]}</span>
-                          <span className="content-card-level">{item.level}</span>
+
+                  <hr className="workspace-divider" />
+
+                  <div className="workspace-feed">
+                    <p className="workspace-panel-label"><TrendingUp size={16} /> {t.workspace.examAnalysis.label}</p>
+                    <p className="resource-upload-intro">{t.workspace.examAnalysis.intro}</p>
+
+                    {!currentUser && (
+                      <p className="resource-upload-gate">{t.workspace.examAnalysis.loginPrompt} <button className="button-ghost" onClick={() => openAuth('login')} data-testid="button-exam-login">{t.workspace.examAnalysis.loginCta}</button></p>
+                    )}
+                    {currentUser && currentUser.role !== 'student' && (
+                      <p className="resource-upload-gate">{t.workspace.examAnalysis.rolePrompt}</p>
+                    )}
+
+                    {currentUser && currentUser.role === 'student' && (
+                      <>
+                        {examChartData.length > 0 && (
+                          <div className="exam-chart">
+                            <p className="workspace-panel-label exam-chart-title">{t.workspace.examAnalysis.chartTitle}</p>
+                            <ResponsiveContainer width="100%" height={220}>
+                              <LineChart data={examChartData} margin={{ top: 8, right: 16, left: -16, bottom: 0 }}>
+                                <CartesianGrid stroke="var(--line)" strokeDasharray="3 3" />
+                                <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--ink-soft)' }} />
+                                <YAxis tick={{ fontSize: 11, fill: 'var(--ink-soft)' }} width={32} />
+                                <Tooltip contentStyle={{ fontSize: '0.78rem', borderRadius: 8, border: '1px solid var(--line)' }} formatter={(value: number) => [value, t.workspace.examAnalysis.net]} />
+                                <Line type="monotone" dataKey="net" stroke="var(--role-accent, var(--indigo))" strokeWidth={2} dot={{ r: 3 }} />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+                        )}
+
+                        <form className="workspace-form exam-form" onSubmit={submitExamAttempt}>
+                          <div className="form-row">
+                            <div className="field">
+                              <label htmlFor="exam-type">{t.workspace.examAnalysis.examType}</label>
+                              <select id="exam-type" value={examForm.examType} onChange={(event) => updateExamType(event.target.value as YksExamType)} data-testid="select-exam-type">
+                                {YKS_EXAM_TYPES.map((key) => <option key={key} value={key}>{t.workspace.examAnalysis.examTypes[key]}</option>)}
+                              </select>
+                            </div>
+                            <div className="field">
+                              <label htmlFor="exam-date">{t.workspace.examAnalysis.examDate}</label>
+                              <input id="exam-date" type="date" required value={examForm.examDate} onChange={(event) => setExamForm((current) => ({ ...current, examDate: event.target.value }))} data-testid="input-exam-date" />
+                            </div>
+                          </div>
+                          <div className="field">
+                            <label htmlFor="exam-name">{t.workspace.examAnalysis.examName}</label>
+                            <input id="exam-name" value={examForm.examName} onChange={(event) => setExamForm((current) => ({ ...current, examName: event.target.value }))} placeholder={t.workspace.examAnalysis.examNamePlaceholder} data-testid="input-exam-name" />
+                          </div>
+
+                          <div className="exam-subject-table">
+                            <div className="exam-subject-row exam-subject-head">
+                              <span />
+                              <span>{t.workspace.examAnalysis.correct}</span>
+                              <span>{t.workspace.examAnalysis.wrong}</span>
+                              <span>{t.workspace.examAnalysis.blank}</span>
+                            </div>
+                            {examForm.subjects.map((entry, index) => {
+                              const def = YKS_SUBJECTS[examForm.examType][index];
+                              return (
+                                <div className="exam-subject-row" key={entry.subject}>
+                                  <span className="exam-subject-name">{entry.subject} <small>({def.totalQuestions})</small></span>
+                                  <input type="number" min={0} max={def.totalQuestions} value={entry.correct} onChange={(event) => updateExamSubjectField(index, 'correct', event.target.value)} data-testid={`input-exam-correct-${index}`} />
+                                  <input type="number" min={0} max={def.totalQuestions} value={entry.wrong} onChange={(event) => updateExamSubjectField(index, 'wrong', event.target.value)} data-testid={`input-exam-wrong-${index}`} />
+                                  <input type="number" min={0} max={def.totalQuestions} value={entry.blank} onChange={(event) => updateExamSubjectField(index, 'blank', event.target.value)} data-testid={`input-exam-blank-${index}`} />
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {createExamMutation.isError && <p className="auth-error" role="alert">{authErrorMessage(createExamMutation.error, t.workspace.examAnalysis.error)}</p>}
+                          <button className="button button-primary" type="submit" disabled={createExamMutation.isPending} data-testid="button-submit-exam">
+                            {createExamMutation.isPending ? <Loader2 size={15} className="spin" /> : <TrendingUp size={15} />}
+                            {createExamMutation.isPending ? t.workspace.examAnalysis.submitting : t.workspace.examAnalysis.submit}
+                          </button>
+                        </form>
+
+                        <p className="workspace-panel-label exam-history-title">{t.workspace.examAnalysis.historyTitle}</p>
+                        {examAttemptsQuery.isLoading && <p className="workspace-status"><Loader2 size={15} className="spin" /> {t.workspace.loading}</p>}
+                        {examAttemptsQuery.data?.length === 0 && (
+                          <div className="workspace-empty"><p>{t.workspace.examAnalysis.empty}</p><small>{t.workspace.examAnalysis.emptyDetail}</small></div>
+                        )}
+                        <div className="exam-history-list">
+                          {[...(examAttemptsQuery.data ?? [])].reverse().map((attempt) => (
+                            <article className="exam-history-card" key={attempt.id} data-testid={`card-exam-${attempt.id}`}>
+                              <div className="exam-history-top">
+                                <div>
+                                  <strong>{t.workspace.examAnalysis.examTypes[attempt.examType]}</strong>
+                                  {attempt.examName && <span className="exam-history-name"> · {attempt.examName}</span>}
+                                  <div className="mono">{new Date(attempt.examDate).toLocaleDateString(language === 'tr' ? 'tr-TR' : 'en-US')}</div>
+                                </div>
+                                <div className="exam-history-total">{attempt.totalNet.toFixed(2)} <small>{t.workspace.examAnalysis.totalNet}</small></div>
+                                <button className="button-ghost" onClick={() => deleteExamMutation.mutate(attempt.id)} disabled={deleteExamMutation.isPending} aria-label={t.workspace.examAnalysis.delete} data-testid={`button-delete-exam-${attempt.id}`}><Trash2 size={14} /></button>
+                              </div>
+                              <div className="exam-history-subjects">
+                                {attempt.subjects.map((subject) => (
+                                  <span key={subject.subject} className="exam-history-subject"><span>{subject.subject}</span><strong>{subject.net.toFixed(2)}</strong></span>
+                                ))}
+                              </div>
+                            </article>
+                          ))}
                         </div>
-                        <h3>{item.title}</h3>
-                        <p>{item.description}</p>
-                        <div className="content-card-meta"><span>{t.workspace.student.by} {item.authorName}</span><span>{formatTimestamp(item.createdAt)}</span></div>
-                      </article>
-                    ))}
+                      </>
+                    )}
                   </div>
-                </div>
+                </>
               )}
 
               {activeRole === 'parent' && (
@@ -1388,109 +1497,6 @@ function App() {
                 </div>
               )}
 
-              {activeRole === 'examAnalysis' && (
-                <div className="workspace-feed">
-                  <p className="workspace-panel-label"><TrendingUp size={16} /> {t.workspace.examAnalysis.label}</p>
-                  <p className="resource-upload-intro">{t.workspace.examAnalysis.intro}</p>
-
-                  {!currentUser && (
-                    <p className="resource-upload-gate">{t.workspace.examAnalysis.loginPrompt} <button className="button-ghost" onClick={() => openAuth('login')} data-testid="button-exam-login">{t.workspace.examAnalysis.loginCta}</button></p>
-                  )}
-                  {currentUser && currentUser.role !== 'student' && (
-                    <p className="resource-upload-gate">{t.workspace.examAnalysis.rolePrompt}</p>
-                  )}
-
-                  {currentUser && currentUser.role === 'student' && (
-                    <>
-                      {examChartData.length > 0 && (
-                        <div className="exam-chart">
-                          <p className="workspace-panel-label exam-chart-title">{t.workspace.examAnalysis.chartTitle}</p>
-                          <ResponsiveContainer width="100%" height={220}>
-                            <LineChart data={examChartData} margin={{ top: 8, right: 16, left: -16, bottom: 0 }}>
-                              <CartesianGrid stroke="var(--line)" strokeDasharray="3 3" />
-                              <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--ink-soft)' }} />
-                              <YAxis tick={{ fontSize: 11, fill: 'var(--ink-soft)' }} width={32} />
-                              <Tooltip contentStyle={{ fontSize: '0.78rem', borderRadius: 8, border: '1px solid var(--line)' }} formatter={(value: number) => [value, t.workspace.examAnalysis.net]} />
-                              <Line type="monotone" dataKey="net" stroke="var(--indigo)" strokeWidth={2} dot={{ r: 3 }} />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
-                      )}
-
-                      <form className="workspace-form exam-form" onSubmit={submitExamAttempt}>
-                        <div className="form-row">
-                          <div className="field">
-                            <label htmlFor="exam-type">{t.workspace.examAnalysis.examType}</label>
-                            <select id="exam-type" value={examForm.examType} onChange={(event) => updateExamType(event.target.value as YksExamType)} data-testid="select-exam-type">
-                              {YKS_EXAM_TYPES.map((key) => <option key={key} value={key}>{t.workspace.examAnalysis.examTypes[key]}</option>)}
-                            </select>
-                          </div>
-                          <div className="field">
-                            <label htmlFor="exam-date">{t.workspace.examAnalysis.examDate}</label>
-                            <input id="exam-date" type="date" required value={examForm.examDate} onChange={(event) => setExamForm((current) => ({ ...current, examDate: event.target.value }))} data-testid="input-exam-date" />
-                          </div>
-                        </div>
-                        <div className="field">
-                          <label htmlFor="exam-name">{t.workspace.examAnalysis.examName}</label>
-                          <input id="exam-name" value={examForm.examName} onChange={(event) => setExamForm((current) => ({ ...current, examName: event.target.value }))} placeholder={t.workspace.examAnalysis.examNamePlaceholder} data-testid="input-exam-name" />
-                        </div>
-
-                        <div className="exam-subject-table">
-                          <div className="exam-subject-row exam-subject-head">
-                            <span />
-                            <span>{t.workspace.examAnalysis.correct}</span>
-                            <span>{t.workspace.examAnalysis.wrong}</span>
-                            <span>{t.workspace.examAnalysis.blank}</span>
-                          </div>
-                          {examForm.subjects.map((entry, index) => {
-                            const def = YKS_SUBJECTS[examForm.examType][index];
-                            return (
-                              <div className="exam-subject-row" key={entry.subject}>
-                                <span className="exam-subject-name">{entry.subject} <small>({def.totalQuestions})</small></span>
-                                <input type="number" min={0} max={def.totalQuestions} value={entry.correct} onChange={(event) => updateExamSubjectField(index, 'correct', event.target.value)} data-testid={`input-exam-correct-${index}`} />
-                                <input type="number" min={0} max={def.totalQuestions} value={entry.wrong} onChange={(event) => updateExamSubjectField(index, 'wrong', event.target.value)} data-testid={`input-exam-wrong-${index}`} />
-                                <input type="number" min={0} max={def.totalQuestions} value={entry.blank} onChange={(event) => updateExamSubjectField(index, 'blank', event.target.value)} data-testid={`input-exam-blank-${index}`} />
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        {createExamMutation.isError && <p className="auth-error" role="alert">{authErrorMessage(createExamMutation.error, t.workspace.examAnalysis.error)}</p>}
-                        <button className="button button-primary" type="submit" disabled={createExamMutation.isPending} data-testid="button-submit-exam">
-                          {createExamMutation.isPending ? <Loader2 size={15} className="spin" /> : <TrendingUp size={15} />}
-                          {createExamMutation.isPending ? t.workspace.examAnalysis.submitting : t.workspace.examAnalysis.submit}
-                        </button>
-                      </form>
-
-                      <p className="workspace-panel-label exam-history-title">{t.workspace.examAnalysis.historyTitle}</p>
-                      {examAttemptsQuery.isLoading && <p className="workspace-status"><Loader2 size={15} className="spin" /> {t.workspace.loading}</p>}
-                      {examAttemptsQuery.data?.length === 0 && (
-                        <div className="workspace-empty"><p>{t.workspace.examAnalysis.empty}</p><small>{t.workspace.examAnalysis.emptyDetail}</small></div>
-                      )}
-                      <div className="exam-history-list">
-                        {[...(examAttemptsQuery.data ?? [])].reverse().map((attempt) => (
-                          <article className="exam-history-card" key={attempt.id} data-testid={`card-exam-${attempt.id}`}>
-                            <div className="exam-history-top">
-                              <div>
-                                <strong>{t.workspace.examAnalysis.examTypes[attempt.examType]}</strong>
-                                {attempt.examName && <span className="exam-history-name"> · {attempt.examName}</span>}
-                                <div className="mono">{new Date(attempt.examDate).toLocaleDateString(language === 'tr' ? 'tr-TR' : 'en-US')}</div>
-                              </div>
-                              <div className="exam-history-total">{attempt.totalNet.toFixed(2)} <small>{t.workspace.examAnalysis.totalNet}</small></div>
-                              <button className="button-ghost" onClick={() => deleteExamMutation.mutate(attempt.id)} disabled={deleteExamMutation.isPending} aria-label={t.workspace.examAnalysis.delete} data-testid={`button-delete-exam-${attempt.id}`}><Trash2 size={14} /></button>
-                            </div>
-                            <div className="exam-history-subjects">
-                              {attempt.subjects.map((subject) => (
-                                <span key={subject.subject} className="exam-history-subject"><span>{subject.subject}</span><strong>{subject.net.toFixed(2)}</strong></span>
-                              ))}
-                            </div>
-                          </article>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         </section>

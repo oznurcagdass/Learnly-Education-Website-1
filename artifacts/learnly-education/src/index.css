@@ -129,6 +129,33 @@
 .exam-history-subject { display: flex; gap: 6px; font-size: .76rem; color: var(--ink-soft); }
 .exam-history-subject strong { color: var(--ink); }
 
+/* Rol bazlı profesyonel renk paletleri — her sekme kendi rengiyle net şekilde
+   ayrışır: Öğretmen = lacivert (otorite/içerik), Öğrenci = zümrüt yeşili
+   (ilerleme/öğrenme), Veli = sıcak bronz (güven). Sitenin genel indigo/kağıt
+   temasıyla çakışmaması için yalnızca vurgu rengi olarak kullanılır. */
+.role-tab[data-role="teacher"].active { background: #1f3a5f; color: #fff; }
+.role-tab[data-role="student"].active { background: #1f6f5c; color: #fff; }
+.role-tab[data-role="parent"].active { background: #8a5a2b; color: #fff; }
+
+.workspace-panel[data-workspace-role="teacher"] { --role-accent: #1f3a5f; --role-tint: #eef2f7; }
+.workspace-panel[data-workspace-role="student"] { --role-accent: #1f6f5c; --role-tint: #eaf5f1; }
+.workspace-panel[data-workspace-role="parent"] { --role-accent: #8a5a2b; --role-tint: #f7f0e6; }
+
+.workspace-panel { border-top: 4px solid var(--role-accent, var(--indigo)); }
+.workspace-panel .button-primary { background: var(--role-accent, var(--indigo)); }
+.workspace-panel .workspace-panel-label { color: var(--role-accent, var(--ink)); }
+.workspace-panel .field label { color: var(--ink); }
+.workspace-panel .field input:focus, .workspace-panel .field select:focus, .workspace-panel .field textarea:focus,
+.workspace-panel input:focus, .workspace-panel select:focus, .workspace-panel textarea:focus {
+  outline: none; border-color: var(--role-accent, var(--indigo));
+}
+.workspace-panel .exam-history-total, .workspace-panel .resource-download { color: var(--role-accent, var(--indigo)); }
+.workspace-panel .exam-chart, .workspace-panel .resource-upload-panel, .workspace-panel .exam-history-card, .workspace-panel .content-card, .workspace-panel .notification-item {
+  background: var(--role-tint, var(--paper));
+}
+.workspace-panel .notification-item { border-left-color: var(--role-accent, var(--coral)); }
+.workspace-divider { border: 0; border-top: 1px solid var(--line); margin: 32px 0; }
+
 .workspace-section { background: var(--paper-deep); }
 .role-tabs { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 32px; }
 .role-tab { position: relative; display: flex; align-items: center; justify-content: center; gap: 9px; border: 0; border-right: 1px solid var(--line); background: transparent; color: var(--ink-soft); padding: 20px 12px; cursor: pointer; font-size: .85rem; font-weight: 600; transition: color .2s ease, background .2s ease; }
