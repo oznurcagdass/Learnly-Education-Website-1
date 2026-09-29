@@ -19,12 +19,24 @@ import {
   RefreshCw,
   Send,
   ShieldCheck,
+  Trash2,
+  TrendingUp,
   Upload,
   Users,
   X,
 } from 'lucide-react';
 import { authErrorMessage, fetchMe, loginUser, logoutUser, registerUser, type AuthUser, type Role } from '@/lib/auth';
 import { listUploadedResources, resourceFileUrl, uploadResource } from '@/lib/resources-api';
+import {
+  createExamAttempt,
+  deleteExamAttempt,
+  listExamAttempts,
+  YKS_EXAM_TYPES,
+  YKS_SUBJECTS,
+  type ExamSubjectInput,
+  type YksExamType,
+} from '@/lib/exams-api';
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import {
   getListLearningContentQueryKey,
   getListNotificationsQueryKey,
@@ -49,8 +61,8 @@ type FilterKey =
   | 'accessibility'
   | 'everyday';
 
-type WorkspaceRole = 'teacher' | 'student' | 'parent';
-const roleKeys: WorkspaceRole[] = ['teacher', 'student', 'parent'];
+type WorkspaceRole = 'teacher' | 'student' | 'parent' | 'examAnalysis';
+const roleKeys: WorkspaceRole[] = ['teacher', 'student', 'parent', 'examAnalysis'];
 
 const audienceKeys: AudienceKey[] = ['parents', 'students', 'teachers', 'examPrep', 'adultLearners'];
 const filterKeys: FilterKey[] = [
@@ -336,6 +348,7 @@ const translations = {
         teacher: 'Öğretmen paneli',
         student: 'Öğrenci paneli',
         parent: 'Veli paneli',
+        examAnalysis: 'Deneme analizi',
       },
       teacher: {
         label: 'Yeni içerik yayınla',
@@ -357,6 +370,40 @@ const translations = {
           resource: 'Kaynak',
           announcement: 'Duyuru',
         },
+      },
+      examAnalysis: {
+        label: 'YKS deneme takibi',
+        intro: 'TYT ve AYT denemelerinin branş bazlı doğru/yanlış/boş sayılarını girin, netlerinizin zaman içindeki değişimini görün.',
+        loginPrompt: 'Deneme sonucu eklemek için öğrenci hesabıyla giriş yapmalısınız.',
+        loginCta: 'Giriş yap',
+        rolePrompt: 'Deneme analizi, kayıtları kişisel tutabilmek için yalnızca öğrenci hesaplarına açıktır.',
+        examType: 'Sınav türü',
+        examTypes: {
+          TYT: 'TYT',
+          AYT_SAY: 'AYT — Sayısal',
+          AYT_EA: 'AYT — Eşit Ağırlık',
+          AYT_SOZ: 'AYT — Sözel',
+          AYT_DIL: 'AYT — Dil (YDT)',
+        },
+        examDate: 'Tarih',
+        examName: 'Deneme adı (opsiyonel)',
+        examNamePlaceholder: 'Örneğin: 3D Yayınları 5. Deneme',
+        correct: 'Doğru',
+        wrong: 'Yanlış',
+        blank: 'Boş',
+        net: 'Net',
+        totalNet: 'Toplam net',
+        submit: 'Denemeyi kaydet',
+        submitting: 'Kaydediliyor…',
+        success: 'Deneme kaydedildi.',
+        error: 'Deneme kaydedilemedi.',
+        chartTitle: 'Net gelişimi',
+        historyTitle: 'Geçmiş denemeler',
+        empty: 'Henüz eklenmiş bir deneme yok.',
+        emptyDetail: 'İlk denemenizi ekleyerek net gelişiminizi takip etmeye başlayın.',
+        delete: 'Sil',
+        deleted: 'Deneme silindi.',
+        overLimit: 'soru sayısını aşamaz',
       },
       student: {
         label: 'Yeni yayınlar',
@@ -638,6 +685,7 @@ const translations = {
         teacher: 'Teacher panel',
         student: 'Student panel',
         parent: 'Parent panel',
+        examAnalysis: 'Exam analysis',
       },
       teacher: {
         label: 'Publish new content',
@@ -659,6 +707,40 @@ const translations = {
           resource: 'Resource',
           announcement: 'Announcement',
         },
+      },
+      examAnalysis: {
+        label: 'University entrance exam tracker',
+        intro: "Log branch-by-branch correct/wrong/blank counts for TYT and AYT practice exams and watch your net score trend over time.",
+        loginPrompt: 'Sign in with a student account to log an exam result.',
+        loginCta: 'Sign in',
+        rolePrompt: 'Exam analysis is only available to student accounts, so history stays personal.',
+        examType: 'Exam type',
+        examTypes: {
+          TYT: 'TYT',
+          AYT_SAY: 'AYT — Science',
+          AYT_EA: 'AYT — Equal Weight',
+          AYT_SOZ: 'AYT — Verbal',
+          AYT_DIL: 'AYT — Language',
+        },
+        examDate: 'Date',
+        examName: 'Exam name (optional)',
+        examNamePlaceholder: 'For example: Publisher X — Practice 5',
+        correct: 'Correct',
+        wrong: 'Wrong',
+        blank: 'Blank',
+        net: 'Net',
+        totalNet: 'Total net',
+        submit: 'Save exam',
+        submitting: 'Saving…',
+        success: 'Exam saved.',
+        error: 'Could not save the exam.',
+        chartTitle: 'Net score trend',
+        historyTitle: 'Past exams',
+        empty: 'No exams logged yet.',
+        emptyDetail: 'Add your first exam to start tracking your net score.',
+        delete: 'Delete',
+        deleted: 'Exam deleted.',
+        overLimit: 'cannot exceed the question count',
       },
       student: {
         label: 'New publications',
@@ -756,6 +838,63 @@ function App() {
       notify(t.resources.upload.success);
     },
   });
+
+  // --- Deneme (YKS) analizi: yalnızca öğrenci hesabına özel geçmiş ---
+  const examAttemptsQuery = useQuery({
+    queryKey: ['exam-attempts'],
+    queryFn: listExamAttempts,
+    enabled: Boolean(currentUser),
+  });
+
+  const emptyExamSubjects = (examType: YksExamType): ExamSubjectInput[] =>
+    YKS_SUBJECTS[examType].map((def) => ({ subject: def.subject, correct: 0, wrong: 0, blank: 0 }));
+
+  const [examForm, setExamForm] = useState<{ examType: YksExamType; examDate: string; examName: string; subjects: ExamSubjectInput[] }>(() => ({
+    examType: 'TYT',
+    examDate: new Date().toISOString().slice(0, 10),
+    examName: '',
+    subjects: emptyExamSubjects('TYT'),
+  }));
+
+  const updateExamType = (examType: YksExamType) => {
+    setExamForm((current) => ({ ...current, examType, subjects: emptyExamSubjects(examType) }));
+  };
+
+  const updateExamSubjectField = (index: number, field: 'correct' | 'wrong' | 'blank', value: string) => {
+    const numeric = Math.max(0, Math.floor(Number(value) || 0));
+    setExamForm((current) => ({
+      ...current,
+      subjects: current.subjects.map((entry, i) => (i === index ? { ...entry, [field]: numeric } : entry)),
+    }));
+  };
+
+  const createExamMutation = useMutation({
+    mutationFn: () => createExamAttempt(examForm),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['exam-attempts'] });
+      setExamForm((current) => ({ ...current, examName: '', subjects: emptyExamSubjects(current.examType) }));
+      notify(t.workspace.examAnalysis.success);
+    },
+  });
+
+  const deleteExamMutation = useMutation({
+    mutationFn: (id: number) => deleteExamAttempt(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['exam-attempts'] });
+      notify(t.workspace.examAnalysis.deleted);
+    },
+  });
+
+  const submitExamAttempt = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    createExamMutation.mutate();
+  };
+
+  const examDateFormatter = new Intl.DateTimeFormat(language === 'tr' ? 'tr-TR' : 'en-US', { day: 'numeric', month: 'short' });
+  const examChartData = (examAttemptsQuery.data ?? []).map((attempt) => ({
+    date: examDateFormatter.format(new Date(attempt.examDate)),
+    net: Math.round(attempt.totalNet * 100) / 100,
+  }));
 
   useEffect(() => {
     const onScroll = () => document.querySelector('.topbar')?.classList.toggle('scrolled', window.scrollY > 12);
@@ -1141,6 +1280,7 @@ function App() {
                   {key === 'teacher' && <Send size={16} />}
                   {key === 'student' && <BookOpen size={16} />}
                   {key === 'parent' && <Bell size={16} />}
+                  {key === 'examAnalysis' && <TrendingUp size={16} />}
                   <span>{t.workspace.roles[key]}</span>
                   {key === 'parent' && unreadCount > 0 && <em className="role-badge">{unreadCount}</em>}
                 </button>
@@ -1245,6 +1385,110 @@ function App() {
                       </article>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {activeRole === 'examAnalysis' && (
+                <div className="workspace-feed">
+                  <p className="workspace-panel-label"><TrendingUp size={16} /> {t.workspace.examAnalysis.label}</p>
+                  <p className="resource-upload-intro">{t.workspace.examAnalysis.intro}</p>
+
+                  {!currentUser && (
+                    <p className="resource-upload-gate">{t.workspace.examAnalysis.loginPrompt} <button className="button-ghost" onClick={() => openAuth('login')} data-testid="button-exam-login">{t.workspace.examAnalysis.loginCta}</button></p>
+                  )}
+                  {currentUser && currentUser.role !== 'student' && (
+                    <p className="resource-upload-gate">{t.workspace.examAnalysis.rolePrompt}</p>
+                  )}
+
+                  {currentUser && currentUser.role === 'student' && (
+                    <>
+                      {examChartData.length > 0 && (
+                        <div className="exam-chart">
+                          <p className="workspace-panel-label exam-chart-title">{t.workspace.examAnalysis.chartTitle}</p>
+                          <ResponsiveContainer width="100%" height={220}>
+                            <LineChart data={examChartData} margin={{ top: 8, right: 16, left: -16, bottom: 0 }}>
+                              <CartesianGrid stroke="var(--line)" strokeDasharray="3 3" />
+                              <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--ink-soft)' }} />
+                              <YAxis tick={{ fontSize: 11, fill: 'var(--ink-soft)' }} width={32} />
+                              <Tooltip contentStyle={{ fontSize: '0.78rem', borderRadius: 8, border: '1px solid var(--line)' }} formatter={(value: number) => [value, t.workspace.examAnalysis.net]} />
+                              <Line type="monotone" dataKey="net" stroke="var(--indigo)" strokeWidth={2} dot={{ r: 3 }} />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
+
+                      <form className="workspace-form exam-form" onSubmit={submitExamAttempt}>
+                        <div className="form-row">
+                          <div className="field">
+                            <label htmlFor="exam-type">{t.workspace.examAnalysis.examType}</label>
+                            <select id="exam-type" value={examForm.examType} onChange={(event) => updateExamType(event.target.value as YksExamType)} data-testid="select-exam-type">
+                              {YKS_EXAM_TYPES.map((key) => <option key={key} value={key}>{t.workspace.examAnalysis.examTypes[key]}</option>)}
+                            </select>
+                          </div>
+                          <div className="field">
+                            <label htmlFor="exam-date">{t.workspace.examAnalysis.examDate}</label>
+                            <input id="exam-date" type="date" required value={examForm.examDate} onChange={(event) => setExamForm((current) => ({ ...current, examDate: event.target.value }))} data-testid="input-exam-date" />
+                          </div>
+                        </div>
+                        <div className="field">
+                          <label htmlFor="exam-name">{t.workspace.examAnalysis.examName}</label>
+                          <input id="exam-name" value={examForm.examName} onChange={(event) => setExamForm((current) => ({ ...current, examName: event.target.value }))} placeholder={t.workspace.examAnalysis.examNamePlaceholder} data-testid="input-exam-name" />
+                        </div>
+
+                        <div className="exam-subject-table">
+                          <div className="exam-subject-row exam-subject-head">
+                            <span />
+                            <span>{t.workspace.examAnalysis.correct}</span>
+                            <span>{t.workspace.examAnalysis.wrong}</span>
+                            <span>{t.workspace.examAnalysis.blank}</span>
+                          </div>
+                          {examForm.subjects.map((entry, index) => {
+                            const def = YKS_SUBJECTS[examForm.examType][index];
+                            return (
+                              <div className="exam-subject-row" key={entry.subject}>
+                                <span className="exam-subject-name">{entry.subject} <small>({def.totalQuestions})</small></span>
+                                <input type="number" min={0} max={def.totalQuestions} value={entry.correct} onChange={(event) => updateExamSubjectField(index, 'correct', event.target.value)} data-testid={`input-exam-correct-${index}`} />
+                                <input type="number" min={0} max={def.totalQuestions} value={entry.wrong} onChange={(event) => updateExamSubjectField(index, 'wrong', event.target.value)} data-testid={`input-exam-wrong-${index}`} />
+                                <input type="number" min={0} max={def.totalQuestions} value={entry.blank} onChange={(event) => updateExamSubjectField(index, 'blank', event.target.value)} data-testid={`input-exam-blank-${index}`} />
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {createExamMutation.isError && <p className="auth-error" role="alert">{authErrorMessage(createExamMutation.error, t.workspace.examAnalysis.error)}</p>}
+                        <button className="button button-primary" type="submit" disabled={createExamMutation.isPending} data-testid="button-submit-exam">
+                          {createExamMutation.isPending ? <Loader2 size={15} className="spin" /> : <TrendingUp size={15} />}
+                          {createExamMutation.isPending ? t.workspace.examAnalysis.submitting : t.workspace.examAnalysis.submit}
+                        </button>
+                      </form>
+
+                      <p className="workspace-panel-label exam-history-title">{t.workspace.examAnalysis.historyTitle}</p>
+                      {examAttemptsQuery.isLoading && <p className="workspace-status"><Loader2 size={15} className="spin" /> {t.workspace.loading}</p>}
+                      {examAttemptsQuery.data?.length === 0 && (
+                        <div className="workspace-empty"><p>{t.workspace.examAnalysis.empty}</p><small>{t.workspace.examAnalysis.emptyDetail}</small></div>
+                      )}
+                      <div className="exam-history-list">
+                        {[...(examAttemptsQuery.data ?? [])].reverse().map((attempt) => (
+                          <article className="exam-history-card" key={attempt.id} data-testid={`card-exam-${attempt.id}`}>
+                            <div className="exam-history-top">
+                              <div>
+                                <strong>{t.workspace.examAnalysis.examTypes[attempt.examType]}</strong>
+                                {attempt.examName && <span className="exam-history-name"> · {attempt.examName}</span>}
+                                <div className="mono">{new Date(attempt.examDate).toLocaleDateString(language === 'tr' ? 'tr-TR' : 'en-US')}</div>
+                              </div>
+                              <div className="exam-history-total">{attempt.totalNet.toFixed(2)} <small>{t.workspace.examAnalysis.totalNet}</small></div>
+                              <button className="button-ghost" onClick={() => deleteExamMutation.mutate(attempt.id)} disabled={deleteExamMutation.isPending} aria-label={t.workspace.examAnalysis.delete} data-testid={`button-delete-exam-${attempt.id}`}><Trash2 size={14} /></button>
+                            </div>
+                            <div className="exam-history-subjects">
+                              {attempt.subjects.map((subject) => (
+                                <span key={subject.subject} className="exam-history-subject"><span>{subject.subject}</span><strong>{subject.net.toFixed(2)}</strong></span>
+                              ))}
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>

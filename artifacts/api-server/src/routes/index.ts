@@ -3,6 +3,7 @@ import healthRouter from "./health";
 import learningRouter from "./learning";
 import authRouter from "./auth";
 import resourcesRouter from "./resources";
+import examsRouter from "./exams";
 
 const router: IRouter = Router();
 
@@ -10,5 +11,6 @@ router.use(healthRouter);
 router.use(learningRouter);
 router.use(authRouter);
 router.use(resourcesRouter);
+router.use(examsRouter);
 
 export default router;

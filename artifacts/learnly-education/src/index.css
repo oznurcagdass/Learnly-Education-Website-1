@@ -107,6 +107,28 @@
 .resource-upload-intro { margin: 0 0 18px; color: var(--ink-soft); font-size: .84rem; max-width: 640px; }
 .resource-upload-gate { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--ink-soft); font-size: .84rem; }
 
+.exam-chart { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 16px 12px 6px; margin-bottom: 24px; }
+.exam-chart-title { margin: 0 0 4px 8px; font-size: .9rem; }
+.exam-form { max-width: 100%; }
+.exam-subject-table { display: grid; gap: 8px; margin: 4px 0 20px; }
+.exam-subject-row { display: grid; grid-template-columns: 1fr 72px 72px 72px; gap: 10px; align-items: center; }
+.exam-subject-head { color: var(--ink-soft); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.exam-subject-head span:not(:first-child) { text-align: center; }
+.exam-subject-name { font-size: .84rem; font-weight: 600; }
+.exam-subject-name small { color: var(--ink-soft); font-weight: 400; }
+.exam-subject-row input[type="number"] { width: 100%; text-align: center; padding: 8px 4px; }
+.exam-history-title { margin-top: 8px; }
+.exam-history-list { display: grid; gap: 12px; }
+.exam-history-card { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.exam-history-top { display: flex; align-items: flex-start; gap: 14px; }
+.exam-history-top > div:first-child { flex: 1; min-width: 0; }
+.exam-history-name { color: var(--ink-soft); font-weight: 400; }
+.exam-history-total { font-weight: 700; font-size: 1.05rem; white-space: nowrap; text-align: right; }
+.exam-history-total small { display: block; font-weight: 400; font-size: .65rem; color: var(--ink-soft); }
+.exam-history-subjects { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.exam-history-subject { display: flex; gap: 6px; font-size: .76rem; color: var(--ink-soft); }
+.exam-history-subject strong { color: var(--ink); }
+
 .workspace-section { background: var(--paper-deep); }
 .role-tabs { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 32px; }
 .role-tab { position: relative; display: flex; align-items: center; justify-content: center; gap: 9px; border: 0; border-right: 1px solid var(--line); background: transparent; color: var(--ink-soft); padding: 20px 12px; cursor: pointer; font-size: .85rem; font-weight: 600; transition: color .2s ease, background .2s ease; }
@@ -174,7 +196,11 @@
   .role-tab:last-child { border-bottom: 0; }
   .workspace-panel { padding: 22px; }
   .workspace-panel-head { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .notification-item { flex-direction: column; }.audience-tab { border-right: 0; border-bottom: 1px solid var(--line); padding: 17px 0; }.audience-tab:last-child { border-bottom: 0; }.audience-content, .request-grid, .faq-grid, .story-grid { grid-template-columns: 1fr; gap: 42px; }.benefit-list { gap: 11px 18px; }.credibility-inner { display: block; }.credibility-list { margin-top: 20px; gap: 18px; flex-wrap: wrap; }.story-grid { gap: 56px; }.story-paper { max-width: 430px; width: 100%; margin-inline: auto; }
+  .notification-item { flex-direction: column; }
+  .exam-subject-row { grid-template-columns: 1fr 56px 56px 56px; gap: 6px; }
+  .exam-subject-row input[type="number"] { padding: 8px 2px; font-size: .82rem; }
+  .exam-history-top { flex-wrap: wrap; }
+  .exam-history-total { order: 3; width: 100%; text-align: left; margin-top: 6px; }.audience-tab { border-right: 0; border-bottom: 1px solid var(--line); padding: 17px 0; }.audience-tab:last-child { border-bottom: 0; }.audience-content, .request-grid, .faq-grid, .story-grid { grid-template-columns: 1fr; gap: 42px; }.benefit-list { gap: 11px 18px; }.credibility-inner { display: block; }.credibility-list { margin-top: 20px; gap: 18px; flex-wrap: wrap; }.story-grid { gap: 56px; }.story-paper { max-width: 430px; width: 100%; margin-inline: auto; }
   .resource-grid { grid-template-columns: 1fr 1fr; }.resource-card:first-child { grid-column: span 2; }.resource-card { min-height: 245px; padding: 16px; }.resource-card h3 { font-size: 1.15rem; }.resource-card p { font-size: .7rem; }
   .request-grid { gap: 37px; }.request-form { padding: 19px; }.quote-section { padding: 95px 0; }.quote-section::before { top: 110px; font-size: 25rem; }.quote { font-size: clamp(2.4rem, 10vw, 4rem); }.final-inner { display: block; }.final-cta p { margin: 22px 0; }.footer-inner { align-items: flex-start; flex-direction: column; gap: 18px; }
 }

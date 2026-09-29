@@ -20,3 +20,4 @@
 export * from "./learning";
 export * from "./auth";
 export * from "./resources";
+export * from "./exams";
